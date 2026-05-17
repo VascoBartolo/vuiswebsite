@@ -2,6 +2,7 @@ import * as React from "react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { Menu, ShoppingBag, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import banner from "@/assets/banner.png";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -43,8 +44,8 @@ export function SiteLayout() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link to="/" className="font-brand text-lg">
-            VUIS
+          <Link to="/" aria-label="VUIS — Home" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+            <img src={banner} alt="VUIS" className="h-20 w-auto object-contain" />
           </Link>
 
           {/* Desktop nav stays unchanged */}
@@ -66,16 +67,17 @@ export function SiteLayout() {
           <div className="flex items-center gap-4">
             <Link
               to="/cart"
-              className="relative inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em]"
+              className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em]"
             >
-              <ShoppingBag className="h-4 w-4" />
+              <span className="relative">
+                <ShoppingBag className="h-4 w-4" />
+                {count > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[8px] leading-none text-primary-foreground tabular-nums" style={{ paddingTop: "1px" }}>
+                    {count}
+                  </span>
+                )}
+              </span>
               <span className="hidden sm:inline">Bag</span>
-
-              {count > 0 && (
-                <span className="ml-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] text-primary-foreground">
-                  {count}
-                </span>
-              )}
             </Link>
 
             <button
@@ -116,12 +118,8 @@ export function SiteLayout() {
           }`}
         >
           <div className="flex h-16 items-center justify-between border-b border-border/60 px-6">
-            <Link
-              to="/"
-              className="font-brand text-lg"
-              onClick={closeMobileMenu}
-            >
-              VUIS
+            <Link to="/" aria-label="VUIS — Home" onClick={closeMobileMenu}>
+              <img src={banner} alt="VUIS" className="h-20 w-auto object-contain" />
             </Link>
 
             <button
@@ -181,7 +179,7 @@ export function SiteLayout() {
       <footer className="border-t border-border/60 bg-background">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-3">
           <div>
-            <div className="font-brand text-base">VUIS</div>
+            <img src={banner} alt="VUIS" className="h-20 w-auto object-contain" />
             <p className="mt-3 max-w-xs text-sm text-muted-foreground">
               Minimal eyewear, handcrafted in the Azores. Atlantic light,
               tailored.

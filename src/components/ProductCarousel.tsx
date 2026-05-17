@@ -36,6 +36,7 @@ export function ProductCarousel({
   const [i, setI] = useState(0);
   const [direction, setDirection] = useState(1);
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
 
   useEffect(() => {
     setI(0);
@@ -73,26 +74,36 @@ export function ProductCarousel({
   };
 
   const handleTouchEnd = (event: TouchEvent<HTMLDivElement>) => {
-    if (touchStartX === null || images.length <= 1) return;
+    if (touchStartX === null || touchStartY === null || images.length <= 1) {
+      setTouchStartX(null);
+      setTouchStartY(null);
+      return;
+    }
 
     const touchEndX = event.changedTouches[0]?.clientX;
-    if (touchEndX === undefined) return;
+    const touchEndY = event.changedTouches[0]?.clientY;
+    if (touchEndX === undefined || touchEndY === undefined) return;
 
     const deltaX = touchStartX - touchEndX;
-    const swipeThreshold = 40;
+    const deltaY = Math.abs(touchStartY - touchEndY);
 
-    if (Math.abs(deltaX) > swipeThreshold) {
+    // Only fire carousel swipe when horizontal motion clearly dominates vertical
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > deltaY * 1.5) {
       event.stopPropagation();
       deltaX > 0 ? next() : prev();
     }
 
     setTouchStartX(null);
+    setTouchStartY(null);
   };
 
   return (
     <div
-      className={cn("group relative", className)}
-      onTouchStart={(event) => setTouchStartX(event.touches[0]?.clientX ?? null)}
+      className={cn("group relative touch-pan-y", className)}
+      onTouchStart={(event) => {
+        setTouchStartX(event.touches[0]?.clientX ?? null);
+        setTouchStartY(event.touches[0]?.clientY ?? null);
+      }}
       onTouchEnd={handleTouchEnd}
     >
       <div className={cn("relative aspect-[4/5] w-full overflow-hidden bg-muted/40", viewportClassName)}>
@@ -122,7 +133,7 @@ export function ProductCarousel({
           <button
             type="button"
             onClick={(event) => stopAndRun(event, prev)}
-            className="absolute left-3 top-1/2 z-20 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-foreground/20 bg-transparent text-foreground backdrop-blur-sm transition hover:border-foreground/40 hover:bg-background/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-9 sm:w-9"
+            className="absolute left-3 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-foreground/20 bg-transparent text-foreground backdrop-blur-sm transition hover:border-foreground/40 hover:bg-background/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:grid"
             aria-label="Previous image"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -131,7 +142,7 @@ export function ProductCarousel({
           <button
             type="button"
             onClick={(event) => stopAndRun(event, next)}
-            className="absolute right-3 top-1/2 z-20 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full border border-foreground/20 bg-transparent text-foreground backdrop-blur-sm transition hover:border-foreground/40 hover:bg-background/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-9 sm:w-9"
+            className="absolute right-3 top-1/2 z-20 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-foreground/20 bg-transparent text-foreground backdrop-blur-sm transition hover:border-foreground/40 hover:bg-background/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:grid"
             aria-label="Next image"
           >
             <ChevronRight className="h-5 w-5" />
