@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { Menu, ShoppingBag, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
-import banner from "@/assets/banner.png";
+import icon from "@/assets/vuis-icon.png";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -41,21 +41,25 @@ export function SiteLayout() {
   }, [mobileMenuOpen]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-          <Link to="/" aria-label="VUIS — Home" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            <img src={banner} alt="VUIS" className="h-20 w-auto object-contain" />
+    <div className="flex min-h-screen flex-col bg-[#FAF7F1] text-neutral-900">
+      {/* ── Floating glass nav ── */}
+      <header className="fixed left-1/2 top-4 z-40 w-[min(93%,60rem)] -translate-x-1/2">
+        <div className="glass flex items-center justify-between rounded-full py-2.5 pl-6 pr-2.5 md:pl-7">
+          <Link
+            to="/"
+            aria-label="VUIS — Home"
+            className="cursor-pointer transition-opacity hover:opacity-70"
+          >
+            <img src={icon} alt="VUIS" className="h-3.5 w-auto md:h-4" />
           </Link>
 
-          {/* Desktop nav stays unchanged */}
-          <nav className="hidden items-center gap-10 text-xs uppercase tracking-[0.25em] md:flex">
+          <nav className="hidden items-center gap-9 text-[13px] font-medium md:flex">
             {nav.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
-                className={`transition-colors hover:text-foreground ${
-                  path === n.to ? "text-foreground" : "text-muted-foreground"
+                className={`cursor-pointer transition-colors hover:text-neutral-900 ${
+                  path === n.to ? "text-neutral-900" : "text-neutral-500"
                 }`}
               >
                 {n.label}
@@ -63,26 +67,18 @@ export function SiteLayout() {
             ))}
           </nav>
 
-          {/* Right actions: cart + mobile hamburger */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <Link
               to="/cart"
-              className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em]"
+              className="flex cursor-pointer items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-xs font-semibold text-white transition-transform duration-300 hover:scale-[1.05]"
             >
-              <span className="relative">
-                <ShoppingBag className="h-4 w-4" />
-                {count > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[8px] leading-none text-primary-foreground tabular-nums" style={{ paddingTop: "1px" }}>
-                    {count}
-                  </span>
-                )}
-              </span>
-              <span className="hidden sm:inline">Bag</span>
+              <ShoppingBag className="h-3.5 w-3.5" />
+              <span className="tabular-nums">Bag · {count}</span>
             </Link>
 
             <button
               type="button"
-              className="inline-flex items-center justify-center bg-transparent text-foreground transition-colors hover:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-white/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
               onClick={() => setMobileMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={mobileMenuOpen}
@@ -93,14 +89,13 @@ export function SiteLayout() {
         </div>
       </header>
 
-      {/* Mobile sidebar with right-side open + close sliding animation */}
+      {/* ── Mobile drawer ── */}
       <div
         className={`fixed inset-0 z-50 md:hidden ${
           mobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"
         }`}
         aria-hidden={!mobileMenuOpen}
       >
-        {/* Overlay */}
         <button
           type="button"
           className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-out ${
@@ -111,20 +106,19 @@ export function SiteLayout() {
           tabIndex={mobileMenuOpen ? 0 : -1}
         />
 
-        {/* Sidebar */}
         <aside
-          className={`absolute right-0 top-0 flex h-full w-[82vw] max-w-sm flex-col border-l border-border/60 bg-background shadow-2xl transition-transform duration-300 ease-out ${
+          className={`absolute right-0 top-0 flex h-full w-[82vw] max-w-sm flex-col rounded-l-[2rem] border-l border-white/60 bg-[#FAF7F1]/95 shadow-2xl backdrop-blur-xl transition-transform duration-300 ease-out ${
             mobileMenuOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="flex h-16 items-center justify-between border-b border-border/60 px-6">
+          <div className="flex h-16 items-center justify-between px-6">
             <Link to="/" aria-label="VUIS — Home" onClick={closeMobileMenu}>
-              <img src={banner} alt="VUIS" className="h-20 w-auto object-contain" />
+              <img src={icon} alt="VUIS" className="h-3.5 w-auto" />
             </Link>
 
             <button
               type="button"
-              className="inline-flex items-center justify-center bg-transparent text-foreground transition-colors hover:text-muted-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={closeMobileMenu}
               aria-label="Close menu"
               tabIndex={mobileMenuOpen ? 0 : -1}
@@ -133,15 +127,17 @@ export function SiteLayout() {
             </button>
           </div>
 
-          <nav className="flex flex-col px-6 py-8">
+          <nav className="flex flex-col gap-1 px-6 py-6">
             {nav.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
                 onClick={closeMobileMenu}
                 tabIndex={mobileMenuOpen ? 0 : -1}
-                className={`border-b border-border/60 py-5 text-sm uppercase tracking-[0.25em] transition-colors hover:text-foreground ${
-                  path === n.to ? "text-foreground" : "text-muted-foreground"
+                className={`cursor-pointer rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
+                  path === n.to
+                    ? "bg-neutral-900 text-white"
+                    : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
                 }`}
               >
                 {n.label}
@@ -152,21 +148,22 @@ export function SiteLayout() {
               to="/cart"
               onClick={closeMobileMenu}
               tabIndex={mobileMenuOpen ? 0 : -1}
-              className={`flex items-center justify-between border-b border-border/60 py-5 text-sm uppercase tracking-[0.25em] transition-colors hover:text-foreground ${
-                path === "/cart" ? "text-foreground" : "text-muted-foreground"
+              className={`flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
+                path === "/cart"
+                  ? "bg-neutral-900 text-white"
+                  : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
               }`}
             >
               <span>Bag</span>
-
               {count > 0 && (
-                <span className="rounded-full bg-primary px-2 py-1 text-[10px] text-primary-foreground">
+                <span className="rounded-full bg-[#CBB588] px-2.5 py-1 text-[11px] font-bold text-neutral-900 tabular-nums">
                   {count}
                 </span>
               )}
             </Link>
           </nav>
 
-          <div className="mt-auto px-6 pb-8 text-xs uppercase tracking-[0.25em] text-muted-foreground">
+          <div className="mt-auto px-10 pb-8 text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
             Made in the Azores
           </div>
         </aside>
@@ -176,33 +173,43 @@ export function SiteLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-border/60 bg-background">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-3">
+      {/* ── Footer ── */}
+      <footer className="border-t border-neutral-900/10">
+        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-3">
           <div>
-            <img src={banner} alt="VUIS" className="h-20 w-auto object-contain" />
-            <p className="mt-3 max-w-xs text-sm text-muted-foreground">
+            <img src={icon} alt="VUIS" className="h-4 w-auto" />
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-500">
               Minimal eyewear, handcrafted in the Azores. Atlantic light,
               tailored.
             </p>
           </div>
 
           <div>
-            <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
               Shop
             </div>
-            <ul className="mt-4 space-y-2 text-sm">
+            <ul className="mt-4 space-y-2.5 text-sm font-medium text-neutral-600">
               <li>
-                <Link to="/products" className="hover:underline">
+                <Link
+                  to="/products"
+                  className="cursor-pointer transition-colors hover:text-neutral-900"
+                >
                   Collection
                 </Link>
               </li>
               <li>
-                <Link to="/cart" className="hover:underline">
+                <Link
+                  to="/cart"
+                  className="cursor-pointer transition-colors hover:text-neutral-900"
+                >
                   Bag
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:underline">
+                <Link
+                  to="/contact"
+                  className="cursor-pointer transition-colors hover:text-neutral-900"
+                >
                   Contact
                 </Link>
               </li>
@@ -210,17 +217,23 @@ export function SiteLayout() {
           </div>
 
           <div>
-            <div className="text-xs uppercase tracking-[0.25em] text-muted-foreground">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
               Policies
             </div>
-            <ul className="mt-4 space-y-2 text-sm">
+            <ul className="mt-4 space-y-2.5 text-sm font-medium text-neutral-600">
               <li>
-                <Link to="/refund-policy" className="hover:underline">
+                <Link
+                  to="/refund-policy"
+                  className="cursor-pointer transition-colors hover:text-neutral-900"
+                >
                   Refund policy
                 </Link>
               </li>
               <li>
-                <Link to="/privacy-policy" className="hover:underline">
+                <Link
+                  to="/privacy-policy"
+                  className="cursor-pointer transition-colors hover:text-neutral-900"
+                >
                   Privacy policy
                 </Link>
               </li>
@@ -228,7 +241,7 @@ export function SiteLayout() {
           </div>
         </div>
 
-        <div className="border-t border-border/60 py-6 text-center text-xs uppercase tracking-[0.25em] text-muted-foreground">
+        <div className="border-t border-neutral-900/10 py-6 text-center text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
           © {new Date().getFullYear()} VUIS · Made in the Azores
         </div>
       </footer>

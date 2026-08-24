@@ -39,7 +39,7 @@ export function ProductDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-5xl gap-0 overflow-hidden p-0 sm:rounded-2xl">
+      <DialogContent className="max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-5xl gap-0 overflow-hidden border-white/70 bg-[#FAF7F1] p-0 sm:rounded-[2rem]">
         <DialogTitle className="sr-only">{product.name}</DialogTitle>
 
         <div className="grid max-h-[calc(100dvh-1rem)] min-h-0 overflow-y-auto md:grid-cols-2 md:overflow-hidden">
@@ -56,7 +56,9 @@ export function ProductDialog({
             </div>
             <h2 className="mt-3 text-3xl sm:text-4xl">{product.name}</h2>
             <div className="mt-2 text-lg">€{product.price}</div>
-            <p className="mt-5 text-sm leading-6 text-muted-foreground">{product.description}</p>
+            <p className="mt-5 text-sm leading-6 text-muted-foreground">
+              {product.description}
+            </p>
 
             <ul className="mt-5 space-y-1.5 text-sm text-muted-foreground">
               {product.details.map((d) => (
@@ -68,8 +70,10 @@ export function ProductDialog({
 
             <div className="mt-8 border-t border-border pt-5 md:mt-auto md:pt-8">
               <div className="flex items-center gap-4">
-                <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Qty</div>
-                <div className="flex items-center border border-border">
+                <div className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                  Qty
+                </div>
+                <div className="flex items-center rounded-full border border-neutral-900/15">
                   <button
                     type="button"
                     onClick={() => setQty((q) => Math.max(1, q - 1))}
@@ -93,14 +97,14 @@ export function ProductDialog({
                 <button
                   type="button"
                   onClick={handleAdd}
-                  className="h-12 border border-primary text-xs uppercase tracking-[0.3em] hover:bg-primary hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-12 cursor-pointer rounded-full border border-neutral-900 text-sm font-semibold transition-colors hover:bg-neutral-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Add to bag
                 </button>
                 <button
                   type="button"
                   onClick={handleBuy}
-                  className="h-12 bg-primary text-xs uppercase tracking-[0.3em] text-primary-foreground hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="h-12 cursor-pointer rounded-full bg-neutral-900 text-sm font-semibold text-white transition-transform duration-300 hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   Buy now
                 </button>

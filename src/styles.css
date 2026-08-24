@@ -141,21 +141,21 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Instrument Sans', 'Inter', system-ui, -apple-system, sans-serif;
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
   }
 
   h1, h2, h3, h4 {
-    font-family: 'Playfair Display', 'Times New Roman', serif;
-    letter-spacing: -0.01em;
-    font-weight: 400;
+    font-family: 'Instrument Sans', 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.025em;
+    font-weight: 600;
   }
 
   .font-brand {
-    font-family: 'Inter', sans-serif;
-    font-weight: 300;
-    letter-spacing: 0.4em;
+    font-family: 'Instrument Sans', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.35em;
   }
 }
 
@@ -202,5 +202,86 @@
     .animate-slide-left, .animate-slide-right, .animate-img-reveal {
       animation: none;
     }
+  }
+}
+
+/* ── Redesign draft utilities ─────────────────────────────────────── */
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-14px); }
+}
+
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(48px, -36px) scale(1.08); }
+  66%      { transform: translate(-36px, 28px) scale(0.94); }
+}
+
+@keyframes shine-sweep {
+  0%        { transform: translateX(-140%) skewX(-18deg); }
+  55%, 100% { transform: translateX(260%) skewX(-18deg); }
+}
+
+@layer utilities {
+  .font-instrument { font-family: 'Instrument Sans', 'Inter', system-ui, sans-serif; }
+  .font-serif-italic { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; }
+
+  .animate-float         { animation: float-y 6s ease-in-out infinite; }
+  .animate-float-delayed { animation: float-y 7.5s ease-in-out 1.4s infinite; }
+  .animate-orb           { animation: orb-drift 20s ease-in-out infinite; }
+  .animate-orb-slow      { animation: orb-drift 28s ease-in-out 4s infinite; }
+
+  /* Liquid-glass surfaces */
+  .glass {
+    background: linear-gradient(135deg, rgba(255,255,255,0.62), rgba(255,255,255,0.28));
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.55);
+    box-shadow: 0 8px 32px rgba(28,25,23,0.10), inset 0 1px 0 rgba(255,255,255,0.65);
+  }
+  .glass-strong {
+    background: linear-gradient(135deg, rgba(255,255,255,0.88), rgba(255,255,255,0.66));
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid rgba(255,255,255,0.75);
+    box-shadow: 0 8px 32px rgba(28,25,23,0.12), inset 0 1px 0 rgba(255,255,255,0.85);
+  }
+  .glass-dark {
+    background: linear-gradient(135deg, rgba(20,18,16,0.55), rgba(20,18,16,0.35));
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
+    border: 1px solid rgba(255,255,255,0.16);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .glass-shine { position: relative; overflow: hidden; isolation: isolate; }
+  .glass-shine::after {
+    content: "";
+    position: absolute;
+    top: -40%; bottom: -40%; left: 0;
+    width: 34%;
+    background: linear-gradient(105deg, transparent, rgba(255,255,255,0.45), transparent);
+    animation: shine-sweep 5.5s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .text-gradient-warm {
+    background: linear-gradient(115deg, #171412 15%, #5c4f3d 55%, #a9946f 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-sand {
+    background: linear-gradient(115deg, #f6f1e7 20%, #d9c8a8 60%, #b09a72 95%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float, .animate-float-delayed,
+    .animate-orb, .animate-orb-slow {
+      animation: none;
+    }
+    .glass-shine::after { animation: none; opacity: 0; }
   }
 }
