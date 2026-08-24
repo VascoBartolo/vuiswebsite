@@ -1,6 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Gem, ShieldCheck, Sparkles } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { products } from "@/lib/products";
 import heroModel from "@/assets/vuis-hero-bg.png";
 import duo from "@/assets/vuis-duo.png";
@@ -225,7 +232,7 @@ function Index() {
         </div>
       </section>
 
-      {/* ── Collection rail ── */}
+      {/* ── Collection carousel ── */}
       <section className="relative mx-auto max-w-6xl px-6 pb-24">
         <ScrollReveal className="flex items-end justify-between">
           <h2 className="text-3xl font-semibold tracking-[-0.02em] md:text-4xl">
@@ -239,37 +246,61 @@ function Index() {
           </Link>
         </ScrollReveal>
 
-        <div className="mt-8 flex snap-x gap-5 overflow-x-auto pb-4">
-          {products.map((p, i) => (
-            <ScrollReveal key={p.id} delay={i * 100} className="snap-start">
-              <Link
-                to="/products"
-                className="group block w-[290px] shrink-0 cursor-pointer"
-              >
-                <div className="rounded-[1.75rem] border border-white/70 bg-white/70 p-3 shadow-[0_4px_24px_rgba(80,60,30,0.07)] backdrop-blur-md transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_28px_60px_-20px_rgba(80,60,30,0.35)]">
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-[1.35rem] bg-[#F0EBE1]">
-                    <img
-                      src={p.images[0]}
-                      alt={p.name}
-                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between px-3 py-4">
-                    <div>
-                      <p className="text-sm font-bold">{p.name}</p>
-                      <p className="mt-0.5 text-xs text-neutral-500">
-                        {p.subtitle}
-                      </p>
+        <ScrollReveal delay={100}>
+          <Carousel
+            opts={{ align: "start", loop: true }}
+            className="mt-8 px-1 md:px-0"
+          >
+            <CarouselContent className="-ml-5">
+              {products.map((p) => (
+                <CarouselItem
+                  key={p.id}
+                  className="basis-full pl-5 sm:basis-1/2 lg:basis-1/3"
+                >
+                  <Link
+                    to="/products/$productId"
+                    params={{ productId: p.id }}
+                    className="group block cursor-pointer"
+                  >
+                    <div className="rounded-[1.75rem] border border-white/70 bg-white/70 p-3 shadow-[0_4px_24px_rgba(80,60,30,0.07)] backdrop-blur-md transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_28px_60px_-20px_rgba(80,60,30,0.35)]">
+                      <div className="relative aspect-[4/5] overflow-hidden rounded-[1.35rem] bg-[#F0EBE1]">
+                        <img
+                          src={p.images[0]}
+                          alt={p.name}
+                          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                        />
+                        <div className="absolute bottom-3 left-3 flex gap-1.5">
+                          {p.colors.map((c) => (
+                            <span
+                              key={c.id}
+                              title={c.name}
+                              className="h-4 w-4 rounded-full border border-white shadow-sm"
+                              style={{ background: c.swatch }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between px-3 py-4">
+                        <div>
+                          <p className="text-sm font-bold">{p.name}</p>
+                          <p className="mt-0.5 text-xs text-neutral-500">
+                            {p.subtitle}
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-neutral-900 px-3.5 py-1.5 text-xs font-bold text-white">
+                          €{p.price}
+                        </span>
+                      </div>
                     </div>
-                    <span className="rounded-full bg-neutral-900 px-3.5 py-1.5 text-xs font-bold text-white">
-                      €{p.price}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            </ScrollReveal>
-          ))}
-        </div>
+                  </Link>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+
+            <CarouselPrevious className="glass-strong -left-3 h-11 w-11 border-white/70 text-neutral-800 transition-transform hover:scale-110 hover:bg-neutral-900 hover:text-white md:-left-5" />
+            <CarouselNext className="glass-strong -right-3 h-11 w-11 border-white/70 text-neutral-800 transition-transform hover:scale-110 hover:bg-neutral-900 hover:text-white md:-right-5" />
+          </Carousel>
+        </ScrollReveal>
       </section>
 
       {/* ── CTA panel ── */}
