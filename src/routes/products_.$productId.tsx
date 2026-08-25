@@ -313,7 +313,9 @@ function ProductPage() {
 
         <div className="mt-6 grid gap-8 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
           {/* ── Gallery ── */}
-          <div className="animate-fade-up">
+          {/* min-w-0: grid items default to min-width:auto, which would let the
+              thumbnail row force this column wider than the padded container */}
+          <div className="animate-fade-up min-w-0">
             <div className="group relative overflow-hidden rounded-[2rem] border border-white/70 bg-[#F0EBE1] shadow-[0_4px_24px_rgba(80,60,30,0.07)]">
               <div
                 className="overflow-hidden"
@@ -364,13 +366,13 @@ function ProductPage() {
 
             {/* thumbnails */}
             {images.length > 1 && (
-              <div className="mt-4 flex gap-3">
+              <div className="mt-4 flex gap-2.5 sm:gap-3">
                 {images.map((img, idx) => (
                   <button
                     key={`${color.id}-thumb-${idx}`}
                     type="button"
                     onClick={() => emblaApi?.scrollTo(idx)}
-                    className={`h-20 w-20 cursor-pointer overflow-hidden rounded-2xl border bg-[#F0EBE1] transition-all duration-300 ${
+                    className={`aspect-square w-full min-w-0 max-w-20 flex-1 cursor-pointer overflow-hidden rounded-2xl border bg-[#F0EBE1] transition-all duration-300 ${
                       idx === imgIndex
                         ? "border-neutral-900 ring-2 ring-neutral-900 ring-offset-2 ring-offset-[#FAF7F1]"
                         : "border-white/70 opacity-70 hover:opacity-100"

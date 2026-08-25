@@ -22,6 +22,24 @@ export function SiteLayout() {
     setMobileMenuOpen(false);
   };
 
+  /**
+   * Navigating to a different route already lands at the top via the router's
+   * scrollRestoration; clicking the link for the route you are already on is a
+   * no-op navigation, so scroll back up explicitly.
+   */
+  const scrollToTopIfCurrent = (to: string) => () => {
+    if (path !== to) return;
+
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    window.scrollTo({
+      top: 0,
+      behavior: prefersReducedMotion ? "auto" : "smooth",
+    });
+  };
+
   React.useEffect(() => {
     if (!mobileMenuOpen) return;
 
@@ -48,6 +66,7 @@ export function SiteLayout() {
           <Link
             to="/"
             aria-label="VUIS — Home"
+            onClick={scrollToTopIfCurrent("/")}
             className="cursor-pointer transition-opacity hover:opacity-70"
           >
             <img src={icon} alt="VUIS" className="h-3.5 w-auto md:h-4" />
@@ -58,6 +77,7 @@ export function SiteLayout() {
               <Link
                 key={n.to}
                 to={n.to}
+                onClick={scrollToTopIfCurrent(n.to)}
                 className={`cursor-pointer transition-colors hover:text-neutral-900 ${
                   path === n.to ? "text-neutral-900" : "text-neutral-500"
                 }`}
@@ -70,6 +90,7 @@ export function SiteLayout() {
           <div className="flex items-center gap-2">
             <Link
               to="/cart"
+              onClick={scrollToTopIfCurrent("/cart")}
               className="flex cursor-pointer items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-xs font-semibold text-white transition-transform duration-300 hover:scale-[1.05]"
             >
               <ShoppingBag className="h-3.5 w-3.5" />
@@ -112,7 +133,14 @@ export function SiteLayout() {
           }`}
         >
           <div className="flex h-16 items-center justify-between px-6">
-            <Link to="/" aria-label="VUIS — Home" onClick={closeMobileMenu}>
+            <Link
+              to="/"
+              aria-label="VUIS — Home"
+              onClick={() => {
+                closeMobileMenu();
+                scrollToTopIfCurrent("/")();
+              }}
+            >
               <img src={icon} alt="VUIS" className="h-3.5 w-auto" />
             </Link>
 
@@ -132,7 +160,10 @@ export function SiteLayout() {
               <Link
                 key={n.to}
                 to={n.to}
-                onClick={closeMobileMenu}
+                onClick={() => {
+                  closeMobileMenu();
+                  scrollToTopIfCurrent(n.to)();
+                }}
                 tabIndex={mobileMenuOpen ? 0 : -1}
                 className={`cursor-pointer rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
                   path === n.to
@@ -146,7 +177,10 @@ export function SiteLayout() {
 
             <Link
               to="/cart"
-              onClick={closeMobileMenu}
+              onClick={() => {
+                closeMobileMenu();
+                scrollToTopIfCurrent("/cart")();
+              }}
               tabIndex={mobileMenuOpen ? 0 : -1}
               className={`flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
                 path === "/cart"
