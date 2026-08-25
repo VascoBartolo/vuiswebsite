@@ -218,9 +218,11 @@
   66%      { transform: translate(-36px, 28px) scale(0.94); }
 }
 
+/* Travels edge to edge; paired with `alternate` so it eases back the other
+   way instead of snapping to the start. */
 @keyframes shine-sweep {
-  0%        { transform: translateX(-140%) skewX(-18deg); }
-  55%, 100% { transform: translateX(260%) skewX(-18deg); }
+  from { transform: translateX(-140%) skewX(-18deg); }
+  to   { transform: translateX(260%) skewX(-18deg); }
 }
 
 @layer utilities {
@@ -285,7 +287,7 @@
     top: -40%; bottom: -40%; left: 0;
     width: 34%;
     background: linear-gradient(105deg, transparent, rgba(255,255,255,0.45), transparent);
-    animation: shine-sweep 5.5s ease-in-out infinite;
+    animation: shine-sweep 4.5s ease-in-out infinite alternate;
     pointer-events: none;
   }
 

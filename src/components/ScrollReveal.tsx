@@ -1,19 +1,25 @@
 import * as React from "react";
+import { motion, useReducedMotion } from "motion/react";
 import { cn } from "@/lib/utils";
 
-type ScrollRevealProps = React.HTMLAttributes<HTMLElement> & {
-  as?: keyof JSX.IntrinsicElements;
+type ScrollRevealProps = React.HTMLAttributes<HTMLDivElement> & {
+  /** Milliseconds — kept in ms for call-site readability. */
   delay?: number;
   duration?: number;
   y?: number;
   scale?: number;
+  /** 0-1 portion of the element that must be visible before revealing. */
   threshold?: number;
   rootMargin?: string;
   once?: boolean;
 };
 
+/**
+ * Reveals its children as they scroll into view. Built on motion.dev so the
+ * easing matches the rest of the site's motion language, and it collapses to
+ * a plain render when the visitor prefers reduced motion.
+ */
 const ScrollReveal = ({
-  as = "div",
   children,
   className,
   delay = 0,
@@ -23,71 +29,33 @@ const ScrollReveal = ({
   threshold = 0.18,
   rootMargin = "0px 0px -10% 0px",
   once = true,
-  style,
   ...props
 }: ScrollRevealProps) => {
-  const ref = React.useRef<HTMLElement | null>(null);
-  const [isVisible, setIsVisible] = React.useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
-  React.useEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-
-    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
-      setIsVisible(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-
-          if (once) {
-            observer.unobserve(entry.target);
-          }
-        } else if (!once) {
-          setIsVisible(false);
-        }
-      },
-      {
-        threshold,
-        rootMargin,
-      },
+  if (prefersReducedMotion) {
+    return (
+      <div className={className} {...props}>
+        {children}
+      </div>
     );
+  }
 
-    observer.observe(node);
-
-    return () => observer.disconnect();
-  }, [once, rootMargin, threshold]);
-
-  return React.createElement(
-    as,
-    {
-      ref,
-      className: cn(
-        "will-change-transform",
-        isVisible ? "opacity-100" : "opacity-0",
-        className,
-      ),
-      style: {
-        ...style,
-        transform: isVisible
-          ? "translate3d(0, 0, 0) scale(1)"
-          : `translate3d(0, ${y}px, 0) scale(${scale})`,
-        filter: isVisible ? "blur(0)" : "blur(2px)",
-        transitionProperty: "opacity, transform, filter",
-        transitionDuration: `${duration}ms`,
-        transitionDelay: `${delay}ms`,
-        transitionTimingFunction: "var(--transition-smooth)",
-      },
-      ...props,
-    },
-    children,
+  return (
+    <motion.div
+      className={cn("will-change-transform", className)}
+      initial={{ opacity: 0, y, scale, filter: "blur(2px)" }}
+      whileInView={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+      viewport={{ once, amount: threshold, margin: rootMargin }}
+      transition={{
+        duration: duration / 1000,
+        delay: delay / 1000,
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      {...(props as React.ComponentProps<typeof motion.div>)}
+    >
+      {children}
+    </motion.div>
   );
 };
 

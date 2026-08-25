@@ -7,6 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { MotionConfig } from "motion/react";
 import { ArrowUpRight, Compass, RefreshCw } from "lucide-react";
 
 import appCss from "../styles.css?url";
@@ -228,13 +229,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <CookieConsentProvider>
-        <CartProvider>
-          <SiteLayout />
-          <Toaster />
-        </CartProvider>
-      </CookieConsentProvider>
-    </QueryClientProvider>
+    // reducedMotion="user" makes every motion component across the site honour
+    // the visitor's OS-level motion preference without per-component checks.
+    <MotionConfig reducedMotion="user">
+      <QueryClientProvider client={queryClient}>
+        <CookieConsentProvider>
+          <CartProvider>
+            <SiteLayout />
+            <Toaster />
+          </CartProvider>
+        </CookieConsentProvider>
+      </QueryClientProvider>
+    </MotionConfig>
   );
 }

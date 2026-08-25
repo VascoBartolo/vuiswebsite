@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { motion } from "motion/react";
 import { ArrowUpRight, Gem, ShieldCheck, Sparkles } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import { FaqSection } from "@/components/FaqSection";
@@ -44,6 +45,15 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+/** Hero entrance — staggered by delay so the copy assembles top-down. */
+const fadeUp = (delay: number) => ({
+  initial: { opacity: 0, y: 28 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.9, delay, ease: EASE },
+});
+
 const stats = [
   { value: "100%", label: "UV400 Filter" },
   { value: "72 h", label: "Hand Polish" },
@@ -64,24 +74,36 @@ function Index() {
         <div className="grid items-center gap-6 lg:grid-cols-[1.08fr_1fr]">
           {/* copy */}
           <div className="text-center lg:text-left">
-            <div className="glass animate-fade-up inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-600 md:px-5 md:py-2.5 md:text-[11px]">
+            <motion.div
+              {...fadeUp(0)}
+              className="glass inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.35em] text-neutral-600 md:px-5 md:py-2.5 md:text-[11px]"
+            >
               <Sparkles className="h-3.5 w-3.5 text-[#A98B54]" />
               Atlantic Edition · Nº 01
-            </div>
+            </motion.div>
 
-            <h1 className="animate-fade-up delay-100 mt-6 text-5xl font-semibold leading-[0.96] tracking-[-0.035em] md:mt-7 md:text-7xl xl:text-[5.75rem]">
+            <motion.h1
+              {...fadeUp(0.1)}
+              className="mt-6 text-5xl font-semibold leading-[0.96] tracking-[-0.035em] md:mt-7 md:text-7xl xl:text-[5.75rem]"
+            >
               <span className="text-gradient-warm">Clarity,</span>
               <br />
               <span className="text-gradient-warm">redefined.</span>
-            </h1>
+            </motion.h1>
 
-            <p className="animate-fade-up delay-200 mx-auto mt-4 max-w-xs text-sm leading-relaxed text-neutral-500 md:mt-6 md:max-w-md md:text-lg lg:mx-0">
+            <motion.p
+              {...fadeUp(0.2)}
+              className="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-neutral-500 md:mt-6 md:max-w-md md:text-lg lg:mx-0"
+            >
               Hand-finished eyewear from the Azores. Italian acetate,
               hand-tinted gradient lenses, and hardware built for a lifetime of
               light.
-            </p>
+            </motion.p>
 
-            <div className="animate-fade-up delay-300 mt-6 flex flex-wrap items-center justify-center gap-3 md:mt-9 md:gap-4 lg:justify-start">
+            <motion.div
+              {...fadeUp(0.3)}
+              className="mt-6 flex flex-wrap items-center justify-center gap-3 md:mt-9 md:gap-4 lg:justify-start"
+            >
               <Link
                 to="/products"
                 className="cursor-pointer rounded-full bg-neutral-900 px-5 py-3 text-[13px] font-semibold text-white shadow-[0_20px_45px_-14px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:scale-[1.05] md:px-8 md:py-4 md:text-sm"
@@ -94,21 +116,27 @@ function Index() {
               >
                 Our Story <ArrowUpRight className="h-4 w-4" />
               </Link>
-            </div>
+            </motion.div>
 
-            <p className="animate-fade-up delay-400 mt-10 hidden text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-400 lg:block">
+            <motion.p
+              {...fadeUp(0.4)}
+              className="mt-10 hidden text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-400 lg:block"
+            >
               Free EU shipping · 30-day returns · Lifetime hinge service
-            </p>
+            </motion.p>
           </div>
 
           {/* model stage */}
           <div className="relative">
             <div className="pointer-events-none absolute left-1/2 top-1/2 h-[75%] w-[110%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(214,190,145,0.5),transparent)] blur-3xl" />
 
-            <img
+            <motion.img
               src={heroModel}
               alt="Model wearing VUIS Azor clear acetate sunglasses with blue gradient lenses"
-              className="animate-img-reveal delay-300 relative mx-auto h-[40svh] min-h-[300px] w-auto object-contain md:h-[52svh] md:min-h-[360px] lg:h-[62svh]"
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.3, delay: 0.3, ease: EASE }}
+              className="relative mx-auto h-[40svh] min-h-[300px] w-auto object-contain md:h-[52svh] md:min-h-[360px] lg:h-[62svh]"
             />
 
             {/* floating glass chips */}
@@ -139,7 +167,10 @@ function Index() {
         </div>
 
         {/* stat glass row */}
-        <div className="animate-fade-up delay-500 relative z-10 mt-6 grid grid-cols-2 gap-3 md:mt-8 md:grid-cols-4">
+        <motion.div
+          {...fadeUp(0.5)}
+          className="relative z-10 mt-6 grid grid-cols-2 gap-3 md:mt-8 md:grid-cols-4"
+        >
           {stats.map((s) => (
             <div key={s.label} className="glass rounded-2xl py-5 text-center">
               <p className="text-2xl font-bold tracking-tight">{s.value}</p>
@@ -148,7 +179,7 @@ function Index() {
               </p>
             </div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       {/* ── Bento ── */}

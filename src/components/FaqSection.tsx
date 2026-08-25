@@ -1,11 +1,18 @@
 import * as React from "react";
 import { Link } from "@tanstack/react-router";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Plus } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
 import { faqItems } from "@/lib/faq";
 
 export function FaqSection() {
   const [openIndex, setOpenIndex] = React.useState<number | null>(0);
+  const prefersReducedMotion = useReducedMotion();
+
+  // Reduced motion still opens and closes — it just does so instantly.
+  const expand = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 0.38, ease: [0.22, 1, 0.36, 1] as const };
 
   return (
     <section
@@ -33,12 +40,14 @@ export function FaqSection() {
 
           return (
             <ScrollReveal key={item.question} delay={i * 60}>
-              <div
-                className={`overflow-hidden rounded-2xl border backdrop-blur-md transition-colors duration-300 ${
-                  isOpen
-                    ? "border-white/80 bg-white/75"
-                    : "border-white/60 bg-white/50 hover:bg-white/70"
-                }`}
+              <motion.div
+                animate={{
+                  backgroundColor: isOpen
+                    ? "rgba(255,255,255,0.78)"
+                    : "rgba(255,255,255,0.5)",
+                }}
+                transition={expand}
+                className="overflow-hidden rounded-2xl border border-white/70 backdrop-blur-md"
               >
                 <h3>
                   <button
@@ -52,28 +61,40 @@ export function FaqSection() {
                     <span className="text-sm font-bold text-neutral-900 md:text-base">
                       {item.question}
                     </span>
-                    <span
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-neutral-900/15 transition-transform duration-300 ${
-                        isOpen ? "rotate-45 bg-neutral-900 text-white" : ""
-                      }`}
+                    <motion.span
+                      animate={{
+                        rotate: isOpen ? 45 : 0,
+                        backgroundColor: isOpen ? "#171717" : "rgba(0,0,0,0)",
+                        color: isOpen ? "#ffffff" : "#171717",
+                      }}
+                      transition={expand}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-neutral-900/15"
                     >
                       <Plus className="h-4 w-4" />
-                    </span>
+                    </motion.span>
                   </button>
                 </h3>
 
-                <div
-                  id={panelId}
-                  role="region"
-                  aria-labelledby={buttonId}
-                  hidden={!isOpen}
-                  className="px-5 pb-5 md:px-6"
-                >
-                  <p className="max-w-2xl text-sm leading-relaxed text-neutral-500">
-                    {item.answer}
-                  </p>
-                </div>
-              </div>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      key="panel"
+                      id={panelId}
+                      role="region"
+                      aria-labelledby={buttonId}
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={expand}
+                      className="overflow-hidden"
+                    >
+                      <p className="max-w-2xl px-5 pb-5 text-sm leading-relaxed text-neutral-500 md:px-6">
+                        {item.answer}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             </ScrollReveal>
           );
         })}

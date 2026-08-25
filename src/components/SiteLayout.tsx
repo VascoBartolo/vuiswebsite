@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Menu, ShoppingBag, User, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { CookieBanner } from "@/components/CookieBanner";
@@ -13,6 +14,7 @@ const nav = [
 
 export function SiteLayout() {
   const { count } = useCart();
+  const prefersReducedMotion = useReducedMotion();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const path = useRouterState({
@@ -31,14 +33,11 @@ export function SiteLayout() {
   const scrollToTopIfCurrent = (to: string) => () => {
     if (path !== to) return;
 
-    const prefersReducedMotion = window.matchMedia(
+    const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    window.scrollTo({
-      top: 0,
-      behavior: prefersReducedMotion ? "auto" : "smooth",
-    });
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
   };
 
   React.useEffect(() => {
@@ -104,7 +103,18 @@ export function SiteLayout() {
               className="flex cursor-pointer items-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-xs font-semibold text-white transition-transform duration-300 hover:scale-[1.05]"
             >
               <ShoppingBag className="h-3.5 w-3.5" />
-              <span className="tabular-nums">Bag · {count}</span>
+              <span className="tabular-nums">
+                Bag ·{" "}
+                <motion.span
+                  key={count}
+                  initial={{ y: prefersReducedMotion ? 0 : -8, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  className="inline-block"
+                >
+                  {count}
+                </motion.span>
+              </span>
             </Link>
 
             <button
@@ -121,113 +131,115 @@ export function SiteLayout() {
       </header>
 
       {/* ── Mobile drawer ── */}
-      <div
-        className={`fixed inset-0 z-50 md:hidden ${
-          mobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"
-        }`}
-        aria-hidden={!mobileMenuOpen}
-      >
-        <button
-          type="button"
-          className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-out ${
-            mobileMenuOpen ? "opacity-100" : "opacity-0"
-          }`}
-          onClick={closeMobileMenu}
-          aria-label="Close menu"
-          tabIndex={mobileMenuOpen ? 0 : -1}
-        />
-
-        <aside
-          className={`absolute right-0 top-0 flex h-full w-[82vw] max-w-sm flex-col rounded-l-[2rem] border-l border-white/60 bg-[#FAF7F1]/95 shadow-2xl backdrop-blur-xl transition-transform duration-300 ease-out ${
-            mobileMenuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
-        >
-          <div className="flex h-16 items-center justify-between px-6">
-            <Link
-              to="/"
-              aria-label="VUIS — Home"
-              onClick={() => {
-                closeMobileMenu();
-                scrollToTopIfCurrent("/")();
-              }}
-            >
-              <img src={icon} alt="VUIS" className="h-3.5 w-auto" />
-            </Link>
-
-            <button
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <motion.button
               type="button"
-              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
               onClick={closeMobileMenu}
               aria-label="Close menu"
-              tabIndex={mobileMenuOpen ? 0 : -1}
+            />
+
+            <motion.aside
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={
+                prefersReducedMotion
+                  ? { duration: 0 }
+                  : { type: "spring", stiffness: 320, damping: 34 }
+              }
+              className="absolute right-0 top-0 flex h-full w-[82vw] max-w-sm flex-col rounded-l-[2rem] border-l border-white/60 bg-[#FAF7F1]/95 shadow-2xl backdrop-blur-xl"
             >
-              <X className="h-4 w-4" />
-            </button>
+              <div className="flex h-16 items-center justify-between px-6">
+                <Link
+                  to="/"
+                  aria-label="VUIS — Home"
+                  onClick={() => {
+                    closeMobileMenu();
+                    scrollToTopIfCurrent("/")();
+                  }}
+                >
+                  <img src={icon} alt="VUIS" className="h-3.5 w-auto" />
+                </Link>
+
+                <button
+                  type="button"
+                  className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  onClick={closeMobileMenu}
+                  aria-label="Close menu"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <nav className="flex flex-col gap-1 px-6 py-6">
+                {nav.map((n) => (
+                  <Link
+                    key={n.to}
+                    to={n.to}
+                    onClick={() => {
+                      closeMobileMenu();
+                      scrollToTopIfCurrent(n.to)();
+                    }}
+                    className={`cursor-pointer rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
+                      path === n.to
+                        ? "bg-neutral-900 text-white"
+                        : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
+                    }`}
+                  >
+                    {n.label}
+                  </Link>
+                ))}
+
+                <Link
+                  to="/cart"
+                  onClick={() => {
+                    closeMobileMenu();
+                    scrollToTopIfCurrent("/cart")();
+                  }}
+                  className={`flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
+                    path === "/cart"
+                      ? "bg-neutral-900 text-white"
+                      : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
+                  }`}
+                >
+                  <span>Bag</span>
+                  {count > 0 && (
+                    <span className="rounded-full bg-[#CBB588] px-2.5 py-1 text-[11px] font-bold text-neutral-900 tabular-nums">
+                      {count}
+                    </span>
+                  )}
+                </Link>
+
+                <Link
+                  to="/login"
+                  onClick={() => {
+                    closeMobileMenu();
+                    scrollToTopIfCurrent("/login")();
+                  }}
+                  className={`flex cursor-pointer items-center gap-2.5 rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
+                    path === "/login"
+                      ? "bg-neutral-900 text-white"
+                      : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
+                  }`}
+                >
+                  <User className="h-4 w-4" /> Sign in
+                </Link>
+              </nav>
+
+              <div className="mt-auto px-10 pb-8 text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
+                Made in the Azores
+              </div>
+            </motion.aside>
           </div>
-
-          <nav className="flex flex-col gap-1 px-6 py-6">
-            {nav.map((n) => (
-              <Link
-                key={n.to}
-                to={n.to}
-                onClick={() => {
-                  closeMobileMenu();
-                  scrollToTopIfCurrent(n.to)();
-                }}
-                tabIndex={mobileMenuOpen ? 0 : -1}
-                className={`cursor-pointer rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
-                  path === n.to
-                    ? "bg-neutral-900 text-white"
-                    : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
-                }`}
-              >
-                {n.label}
-              </Link>
-            ))}
-
-            <Link
-              to="/cart"
-              onClick={() => {
-                closeMobileMenu();
-                scrollToTopIfCurrent("/cart")();
-              }}
-              tabIndex={mobileMenuOpen ? 0 : -1}
-              className={`flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
-                path === "/cart"
-                  ? "bg-neutral-900 text-white"
-                  : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
-              }`}
-            >
-              <span>Bag</span>
-              {count > 0 && (
-                <span className="rounded-full bg-[#CBB588] px-2.5 py-1 text-[11px] font-bold text-neutral-900 tabular-nums">
-                  {count}
-                </span>
-              )}
-            </Link>
-
-            <Link
-              to="/login"
-              onClick={() => {
-                closeMobileMenu();
-                scrollToTopIfCurrent("/login")();
-              }}
-              tabIndex={mobileMenuOpen ? 0 : -1}
-              className={`flex cursor-pointer items-center gap-2.5 rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
-                path === "/login"
-                  ? "bg-neutral-900 text-white"
-                  : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
-              }`}
-            >
-              <User className="h-4 w-4" /> Sign in
-            </Link>
-          </nav>
-
-          <div className="mt-auto px-10 pb-8 text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
-            Made in the Azores
-          </div>
-        </aside>
-      </div>
+        )}
+      </AnimatePresence>
 
       <main className="flex-1">
         <Outlet />
