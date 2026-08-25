@@ -139,30 +139,59 @@ function Index() {
               className="relative mx-auto h-[40svh] min-h-[300px] w-auto object-contain md:h-[52svh] md:min-h-[360px] lg:h-[62svh]"
             />
 
-            {/* floating glass chips */}
-            <div className="glass-strong animate-float absolute -left-3 top-[8%] hidden items-center gap-3.5 rounded-2xl px-5 py-4 md:flex xl:-left-5">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900/90 text-white">
-                <ShieldCheck className="h-5 w-5" />
-              </span>
-              <span className="text-left">
-                <span className="block text-sm font-bold">UV 400</span>
-                <span className="block text-xs text-neutral-500">
-                  Total protection
+            {/* Floating glass chips. The outer element carries the entrance so
+                it joins the hero cascade; the inner one owns the perpetual
+                float, keeping the two transforms from fighting each other. */}
+            <motion.div
+              {...fadeUp(0.55)}
+              className="absolute -left-3 top-[8%] hidden md:block xl:-left-5"
+            >
+              <motion.div
+                animate={{ y: [0, -14, 0] }}
+                transition={{
+                  duration: 6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+                className="glass-strong flex items-center gap-3.5 rounded-2xl px-5 py-4"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-900/90 text-white">
+                  <ShieldCheck className="h-5 w-5" />
                 </span>
-              </span>
-            </div>
+                <span className="text-left">
+                  <span className="block text-sm font-bold">UV 400</span>
+                  <span className="block text-xs text-neutral-500">
+                    Total protection
+                  </span>
+                </span>
+              </motion.div>
+            </motion.div>
 
-            <div className="glass-strong animate-float-delayed absolute -right-2 bottom-[16%] hidden items-center gap-3.5 rounded-2xl px-5 py-4 md:flex xl:right-0">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C7D8E8]">
-                <Gem className="h-5 w-5 text-neutral-700" />
-              </span>
-              <span className="text-left">
-                <span className="block text-sm font-bold">Azor · €189</span>
-                <span className="block text-xs text-neutral-500">
-                  Clear / Blue gradient
+            <motion.div
+              {...fadeUp(0.7)}
+              className="absolute -right-2 bottom-[16%] hidden md:block xl:right-0"
+            >
+              <motion.div
+                animate={{ y: [0, -14, 0] }}
+                transition={{
+                  duration: 7.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 1.4,
+                }}
+                className="glass-strong flex items-center gap-3.5 rounded-2xl px-5 py-4"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#C7D8E8]">
+                  <Gem className="h-5 w-5 text-neutral-700" />
                 </span>
-              </span>
-            </div>
+                <span className="text-left">
+                  <span className="block text-sm font-bold">Azor · €189</span>
+                  <span className="block text-xs text-neutral-500">
+                    Clear / Blue gradient
+                  </span>
+                </span>
+              </motion.div>
+            </motion.div>
           </div>
         </div>
 
