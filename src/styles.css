@@ -254,6 +254,30 @@
     border: 1px solid rgba(255,255,255,0.16);
     box-shadow: 0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12);
   }
+  /* Soft grey glass — for controls that float over imagery */
+  .glass-ghost {
+    background: rgba(120, 113, 108, 0.16);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    color: rgba(41, 37, 36, 0.9);
+  }
+  .glass-ghost:hover {
+    background: rgba(120, 113, 108, 0.28);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  .glass-ghost-light {
+    background: rgba(245, 241, 233, 0.14);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+    backdrop-filter: blur(14px) saturate(150%);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .glass-ghost-light:hover {
+    background: rgba(245, 241, 233, 0.26);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
   .glass-shine { position: relative; overflow: hidden; isolation: isolate; }
   .glass-shine::after {
     content: "";

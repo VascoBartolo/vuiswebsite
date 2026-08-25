@@ -4,12 +4,20 @@ import {
   notFound,
   useNavigate,
 } from "@tanstack/react-router";
-import { useEffect, useMemo, useState, type MouseEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import useEmblaCarousel from "embla-carousel-react";
 import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  Maximize2,
   Minus,
   Plus,
   X,
@@ -30,6 +38,178 @@ export const Route = createFileRoute("/products_/$productId")({
   component: ProductPage,
 });
 
+/**
+ * Distinguishes a tap from the end of a swipe, so dragging the carousel never
+ * fires the underlying open/zoom action.
+ */
+function useTapGuard() {
+  const start = useRef<{ x: number; y: number } | null>(null);
+
+  const onPointerDown = (event: ReactPointerEvent) => {
+    start.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const isTap = (event: {
+    clientX: number;
+    clientY: number;
+    detail?: number;
+  }) => {
+    // Keyboard activation reports no pointer coordinates — always allow it
+    if (event.detail === 0) return true;
+
+    const from = start.current;
+    if (!from) return true;
+    return Math.hypot(event.clientX - from.x, event.clientY - from.y) < 10;
+  };
+
+  return { onPointerDown, isTap };
+}
+
+/** Fullscreen gallery: swipe on touch, ghost-glass arrows on desktop, tap to zoom. */
+function Lightbox({
+  images,
+  alt,
+  startIndex,
+  onClose,
+}: {
+  images: string[];
+  alt: string;
+  startIndex: number;
+  onClose: () => void;
+}) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, startIndex });
+  const [index, setIndex] = useState(startIndex);
+  const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
+  const { onPointerDown, isTap } = useTapGuard();
+
+  useEffect(() => {
+    if (!emblaApi) return;
+
+    const onSelect = () => {
+      setIndex(emblaApi.selectedScrollSnap());
+      setZoom(null);
+    };
+
+    emblaApi.on("select", onSelect);
+    return () => {
+      emblaApi.off("select", onSelect);
+    };
+  }, [emblaApi]);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+      if (event.key === "ArrowLeft") emblaApi?.scrollPrev();
+      if (event.key === "ArrowRight") emblaApi?.scrollNext();
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [emblaApi, onClose]);
+
+  const zoomAt = (event: MouseEvent<HTMLElement>) => {
+    // A drag that ends over the image must not register as a zoom tap
+    if (!isTap(event)) return;
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    setZoom({
+      x: ((event.clientX - rect.left) / rect.width) * 100,
+      y: ((event.clientY - rect.top) / rect.height) * 100,
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-neutral-950/92 backdrop-blur-md">
+      <div
+        className="h-full overflow-hidden"
+        ref={emblaRef}
+        onPointerDown={onPointerDown}
+      >
+        <div className="flex h-full touch-pan-y">
+          {images.map((img, idx) => (
+            <div
+              key={idx}
+              className="flex h-full min-w-0 flex-[0_0_100%] items-center justify-center p-5 md:p-14"
+              onClick={(event) => {
+                if (isTap(event)) onClose();
+              }}
+            >
+              <img
+                src={img}
+                alt={`${alt} — image ${idx + 1}`}
+                draggable={false}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  zoomAt(event);
+                }}
+                className="max-h-full max-w-full cursor-zoom-in select-none object-contain"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* zoom layer */}
+      {zoom && (
+        <div
+          className="absolute inset-0 cursor-zoom-out overflow-hidden bg-neutral-950/92 p-5 md:p-14"
+          onClick={() => setZoom(null)}
+        >
+          <img
+            src={images[index]}
+            alt={`${alt}, enlarged`}
+            draggable={false}
+            className="h-full w-full select-none object-contain transition-transform duration-300 ease-out"
+            style={{
+              transform: "scale(2.4)",
+              transformOrigin: `${zoom.x}% ${zoom.y}%`,
+            }}
+          />
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={onClose}
+        className="glass-ghost-light absolute right-5 top-5 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110"
+        aria-label="Close gallery"
+      >
+        <X className="h-5 w-5" />
+      </button>
+
+      {images.length > 1 && !zoom && (
+        <>
+          <button
+            type="button"
+            onClick={() => emblaApi?.scrollPrev()}
+            className="glass-ghost-light absolute left-6 top-1/2 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110 md:flex"
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => emblaApi?.scrollNext()}
+            className="glass-ghost-light absolute right-6 top-1/2 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110 md:flex"
+            aria-label="Next image"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+
+          <p className="glass-ghost-light absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full px-4 py-2 text-xs font-semibold tabular-nums">
+            {index + 1} / {images.length}
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
 function ProductPage() {
   const { productId } = Route.useParams();
   const product = useMemo(
@@ -43,42 +223,53 @@ function ProductPage() {
   const [colorId, setColorId] = useState(product?.colors[0]?.id);
   const [imgIndex, setImgIndex] = useState(0);
   const [qty, setQty] = useState(1);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
-  useEffect(() => {
-    setColorId(product?.colors[0]?.id);
-    setImgIndex(0);
-    setQty(1);
-  }, [product?.id]);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
+  const { onPointerDown, isTap } = useTapGuard();
 
   const color =
     product?.colors.find((c) => c.id === colorId) ?? product?.colors[0];
-  const images = color?.images ?? product?.images ?? [];
+  const images = useMemo(
+    () => color?.images ?? product?.images ?? [],
+    [color, product],
+  );
 
-  const prevImage = () =>
-    setImgIndex((i) => (i - 1 + images.length) % images.length);
-  const nextImage = () => setImgIndex((i) => (i + 1) % images.length);
-
-  // Lightbox: keyboard nav + scroll lock
   useEffect(() => {
-    if (!lightboxOpen) return;
+    setColorId(product?.colors[0]?.id);
+    setQty(1);
+  }, [product?.id, product?.colors]);
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setLightboxOpen(false);
-      if (event.key === "ArrowLeft") prevImage();
-      if (event.key === "ArrowRight") nextImage();
-    };
+  // Keep the active thumbnail in sync with whatever the carousel lands on
+  useEffect(() => {
+    if (!emblaApi) return;
 
-    document.addEventListener("keydown", onKeyDown);
-    document.body.style.overflow = "hidden";
+    const onSelect = () => setImgIndex(emblaApi.selectedScrollSnap());
+    emblaApi.on("select", onSelect);
+    emblaApi.on("reInit", onSelect);
 
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "";
+      emblaApi.off("select", onSelect);
+      emblaApi.off("reInit", onSelect);
     };
+  }, [emblaApi]);
+
+  // A colour swap changes the slide set — rebuild and return to the first frame
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.reInit();
+    emblaApi.scrollTo(0, true);
+    setImgIndex(0);
+  }, [emblaApi, images]);
+
+  const openLightbox = useCallback(
+    (idx: number, event: MouseEvent<HTMLElement>) => {
+      if (!isTap(event)) return;
+      setLightboxIndex(idx);
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lightboxOpen, images.length]);
+    [],
+  );
 
   if (!product || !color) {
     return (
@@ -96,11 +287,6 @@ function ProductPage() {
     );
   }
 
-  const selectColor = (id: string) => {
-    setColorId(id);
-    setImgIndex(0);
-  };
-
   const handleAdd = () => {
     add(product.id, qty, color.id);
     toast.success(`${product.name} · ${color.name} added to bag`);
@@ -109,18 +295,6 @@ function ProductPage() {
   const handleBuy = () => {
     add(product.id, qty, color.id);
     navigate({ to: "/cart" });
-  };
-
-  const toggleZoom = (event: MouseEvent<HTMLImageElement>) => {
-    if (zoom) {
-      setZoom(null);
-      return;
-    }
-    const rect = event.currentTarget.getBoundingClientRect();
-    setZoom({
-      x: ((event.clientX - rect.left) / rect.width) * 100,
-      y: ((event.clientY - rect.top) / rect.height) * 100,
-    });
   };
 
   return (
@@ -141,37 +315,45 @@ function ProductPage() {
           {/* ── Gallery ── */}
           <div className="animate-fade-up">
             <div className="group relative overflow-hidden rounded-[2rem] border border-white/70 bg-[#F0EBE1] shadow-[0_4px_24px_rgba(80,60,30,0.07)]">
-              <button
-                type="button"
-                onClick={() => setLightboxOpen(true)}
-                className="block aspect-[4/5] w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Expand image"
+              <div
+                className="overflow-hidden"
+                ref={emblaRef}
+                onPointerDown={onPointerDown}
               >
-                <img
-                  src={images[imgIndex]}
-                  alt={`${product.name} — ${color.name}`}
-                  className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                />
-              </button>
-
-              <span className="glass-strong pointer-events-none absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full text-neutral-700 opacity-80 transition-opacity group-hover:opacity-100">
-                <Maximize2 className="h-4 w-4" />
-              </span>
+                <div className="flex touch-pan-y">
+                  {images.map((img, idx) => (
+                    <button
+                      key={`${color.id}-${idx}`}
+                      type="button"
+                      onClick={(event) => openLightbox(idx, event)}
+                      className="block aspect-[4/5] min-w-0 flex-[0_0_100%] cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                      aria-label={`Expand image ${idx + 1} of ${images.length}`}
+                    >
+                      <img
+                        src={img}
+                        alt={`${product.name} — ${color.name}`}
+                        draggable={false}
+                        className="h-full w-full select-none object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {images.length > 1 && (
                 <>
                   <button
                     type="button"
-                    onClick={prevImage}
-                    className="glass-strong absolute left-4 top-1/2 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-neutral-800 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() => emblaApi?.scrollPrev()}
+                    className="glass-ghost absolute left-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full opacity-70 transition-all duration-300 group-hover:opacity-100 md:flex"
                     aria-label="Previous image"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
                   <button
                     type="button"
-                    onClick={nextImage}
-                    className="glass-strong absolute right-4 top-1/2 flex h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-neutral-800 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    onClick={() => emblaApi?.scrollNext()}
+                    className="glass-ghost absolute right-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full opacity-70 transition-all duration-300 group-hover:opacity-100 md:flex"
                     aria-label="Next image"
                   >
                     <ChevronRight className="h-5 w-5" />
@@ -181,28 +363,31 @@ function ProductPage() {
             </div>
 
             {/* thumbnails */}
-            <div className="mt-4 flex gap-3">
-              {images.map((img, idx) => (
-                <button
-                  key={`${color.id}-${idx}`}
-                  type="button"
-                  onClick={() => setImgIndex(idx)}
-                  className={`h-20 w-20 cursor-pointer overflow-hidden rounded-2xl border bg-[#F0EBE1] transition-all duration-300 ${
-                    idx === imgIndex
-                      ? "border-neutral-900 ring-2 ring-neutral-900 ring-offset-2 ring-offset-[#FAF7F1]"
-                      : "border-white/70 opacity-70 hover:opacity-100"
-                  }`}
-                  aria-label={`Show image ${idx + 1} of ${images.length}`}
-                  aria-current={idx === imgIndex ? "true" : undefined}
-                >
-                  <img
-                    src={img}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
+            {images.length > 1 && (
+              <div className="mt-4 flex gap-3">
+                {images.map((img, idx) => (
+                  <button
+                    key={`${color.id}-thumb-${idx}`}
+                    type="button"
+                    onClick={() => emblaApi?.scrollTo(idx)}
+                    className={`h-20 w-20 cursor-pointer overflow-hidden rounded-2xl border bg-[#F0EBE1] transition-all duration-300 ${
+                      idx === imgIndex
+                        ? "border-neutral-900 ring-2 ring-neutral-900 ring-offset-2 ring-offset-[#FAF7F1]"
+                        : "border-white/70 opacity-70 hover:opacity-100"
+                    }`}
+                    aria-label={`Show image ${idx + 1} of ${images.length}`}
+                    aria-current={idx === imgIndex ? "true" : undefined}
+                  >
+                    <img
+                      src={img}
+                      alt=""
+                      draggable={false}
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ── Details ── */}
@@ -231,7 +416,7 @@ function ProductPage() {
                   <button
                     key={c.id}
                     type="button"
-                    onClick={() => selectColor(c.id)}
+                    onClick={() => setColorId(c.id)}
                     title={c.name}
                     aria-label={`Colour: ${c.name}`}
                     aria-pressed={c.id === color.id}
@@ -313,84 +498,13 @@ function ProductPage() {
         </div>
       </div>
 
-      {/* ── Lightbox ── */}
-      {lightboxOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center bg-neutral-950/90 backdrop-blur-md"
-          onClick={() => {
-            setZoom(null);
-            setLightboxOpen(false);
-          }}
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${product.name} image gallery`}
-        >
-          <div className="absolute inset-0 overflow-hidden p-6 md:p-14">
-            <img
-              src={images[imgIndex]}
-              alt={`${product.name} — ${color.name}, enlarged`}
-              onClick={(event) => {
-                event.stopPropagation();
-                toggleZoom(event);
-              }}
-              className={`h-full w-full object-contain transition-transform duration-300 ease-out ${
-                zoom ? "cursor-zoom-out" : "cursor-zoom-in"
-              }`}
-              style={
-                zoom
-                  ? {
-                      transform: "scale(2.4)",
-                      transformOrigin: `${zoom.x}% ${zoom.y}%`,
-                    }
-                  : undefined
-              }
-            />
-          </div>
-
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              setZoom(null);
-              setLightboxOpen(false);
-            }}
-            className="glass-dark absolute right-5 top-5 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full text-white transition-transform hover:scale-110"
-            aria-label="Close gallery"
-          >
-            <X className="h-5 w-5" />
-          </button>
-
-          {images.length > 1 && !zoom && (
-            <>
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  prevImage();
-                }}
-                className="glass-dark absolute left-5 top-1/2 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-white transition-transform hover:scale-110"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="h-5 w-5" />
-              </button>
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  nextImage();
-                }}
-                className="glass-dark absolute right-5 top-1/2 flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-white transition-transform hover:scale-110"
-                aria-label="Next image"
-              >
-                <ChevronRight className="h-5 w-5" />
-              </button>
-            </>
-          )}
-
-          <p className="glass-dark absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full px-4 py-2 text-xs font-semibold text-white tabular-nums">
-            {imgIndex + 1} / {images.length}
-          </p>
-        </div>
+      {lightboxIndex !== null && (
+        <Lightbox
+          images={images}
+          alt={`${product.name} — ${color.name}`}
+          startIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+        />
       )}
     </div>
   );
