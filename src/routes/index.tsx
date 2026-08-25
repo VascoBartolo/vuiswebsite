@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight, Gem, ShieldCheck, Sparkles } from "lucide-react";
 import ScrollReveal from "@/components/ScrollReveal";
+import { FaqSection } from "@/components/FaqSection";
+import { faqItems } from "@/lib/faq";
 import {
   Carousel,
   CarouselContent,
@@ -14,6 +16,17 @@ import duo from "@/assets/vuis-duo.png";
 import blackDetail from "@/assets/vuis-black-detail.png";
 import clearDetail from "@/assets/vuis-clear-detail.png";
 
+/** FAQ rich-result data, built from the same source the accordion renders. */
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqItems.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  })),
+};
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -21,8 +34,11 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Handcrafted luxury sunglasses from the Azores. Italian acetate, Atlantic light.",
+          "Handcrafted luxury sunglasses from the Azores. Italian Mazzucchelli acetate, hand-tinted CR-39 lenses, 100% UV400 protection, numbered in series of five hundred.",
       },
+    ],
+    scripts: [
+      { type: "application/ld+json", children: JSON.stringify(faqSchema) },
     ],
   }),
   component: Index,
@@ -154,7 +170,8 @@ function Index() {
             <div className="group relative h-[420px] overflow-hidden rounded-[2rem]">
               <img
                 src={duo}
-                alt="VUIS Azor and Pico Noir stacked"
+                alt="VUIS Azor crystal frame and Pico Noir black frame stacked on a pale studio background"
+                loading="lazy"
                 className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
               />
               <div className="glass-dark absolute bottom-4 left-4 right-4 rounded-2xl px-6 py-4 text-white">
@@ -185,7 +202,8 @@ function Index() {
               </div>
               <img
                 src={blackDetail}
-                alt="Macro detail of Pico Noir acetate"
+                alt="Macro detail of the Pico Noir temple showing polished black Mazzucchelli acetate and the engraved VUIS logo"
+                loading="lazy"
                 className="h-44 w-full rounded-2xl object-cover"
               />
             </div>
@@ -204,7 +222,8 @@ function Index() {
               </div>
               <img
                 src={clearDetail}
-                alt="Detail of the Azor clear frame"
+                alt="Close-up of the Azor crystal acetate frame with its hand-tinted blue gradient lenses"
+                loading="lazy"
                 className="h-40 w-full rounded-2xl object-cover"
               />
             </div>
@@ -266,7 +285,8 @@ function Index() {
                       <div className="relative aspect-[4/5] overflow-hidden rounded-[1.35rem] bg-[#F0EBE1]">
                         <img
                           src={p.images[0]}
-                          alt={p.name}
+                          alt={`VUIS ${p.name} sunglasses — ${p.subtitle.toLowerCase()}`}
+                          loading="lazy"
                           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
                         />
                         <div className="absolute bottom-3 left-3 flex gap-1.5">
@@ -302,6 +322,9 @@ function Index() {
           </Carousel>
         </ScrollReveal>
       </section>
+
+      {/* ── FAQ ── */}
+      <FaqSection />
 
       {/* ── CTA panel ── */}
       <section className="relative mx-auto max-w-6xl px-6 pb-24 md:pb-28">

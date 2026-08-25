@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as CookiePolicyRouteImport } from './routes/cookie-policy'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as IndexRouteImport } from './routes/index'
@@ -30,6 +32,16 @@ const ProductsRoute = ProductsRouteImport.update({
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CookiePolicyRoute = CookiePolicyRouteImport.update({
+  id: '/cookie-policy',
+  path: '/cookie-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -57,6 +69,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
+  '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/products': typeof ProductsRoute
   '/refund-policy': typeof RefundPolicyRoute
@@ -66,6 +80,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
+  '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/products': typeof ProductsRoute
   '/refund-policy': typeof RefundPolicyRoute
@@ -76,6 +92,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
+  '/cookie-policy': typeof CookiePolicyRoute
+  '/login': typeof LoginRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/products': typeof ProductsRoute
   '/refund-policy': typeof RefundPolicyRoute
@@ -87,6 +105,8 @@ export interface FileRouteTypes {
     | '/'
     | '/cart'
     | '/contact'
+    | '/cookie-policy'
+    | '/login'
     | '/privacy-policy'
     | '/products'
     | '/refund-policy'
@@ -96,6 +116,8 @@ export interface FileRouteTypes {
     | '/'
     | '/cart'
     | '/contact'
+    | '/cookie-policy'
+    | '/login'
     | '/privacy-policy'
     | '/products'
     | '/refund-policy'
@@ -105,6 +127,8 @@ export interface FileRouteTypes {
     | '/'
     | '/cart'
     | '/contact'
+    | '/cookie-policy'
+    | '/login'
     | '/privacy-policy'
     | '/products'
     | '/refund-policy'
@@ -115,6 +139,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CartRoute: typeof CartRoute
   ContactRoute: typeof ContactRoute
+  CookiePolicyRoute: typeof CookiePolicyRoute
+  LoginRoute: typeof LoginRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ProductsRoute: typeof ProductsRoute
   RefundPolicyRoute: typeof RefundPolicyRoute
@@ -142,6 +168,20 @@ declare module '@tanstack/react-router' {
       path: '/privacy-policy'
       fullPath: '/privacy-policy'
       preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cookie-policy': {
+      id: '/cookie-policy'
+      path: '/cookie-policy'
+      fullPath: '/cookie-policy'
+      preLoaderRoute: typeof CookiePolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -179,6 +219,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CartRoute: CartRoute,
   ContactRoute: ContactRoute,
+  CookiePolicyRoute: CookiePolicyRoute,
+  LoginRoute: LoginRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ProductsRoute: ProductsRoute,
   RefundPolicyRoute: RefundPolicyRoute,

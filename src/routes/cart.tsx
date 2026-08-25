@@ -56,7 +56,8 @@ function CartPage() {
               >
                 <img
                   src={color?.images[0] ?? product.images[0]}
-                  alt={product.name}
+                  alt={`VUIS ${product.name}${color ? ` in ${color.name}` : ""}`}
+                  loading="lazy"
                   className="h-28 w-28 rounded-2xl bg-[#F0EBE1] object-cover md:h-32 md:w-32"
                 />
               </Link>

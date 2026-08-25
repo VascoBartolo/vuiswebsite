@@ -1,7 +1,8 @@
 import * as React from "react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
-import { Menu, ShoppingBag, X } from "lucide-react";
+import { Menu, ShoppingBag, User, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { CookieBanner } from "@/components/CookieBanner";
 import icon from "@/assets/vuis-icon.png";
 
 const nav = [
@@ -88,6 +89,15 @@ export function SiteLayout() {
           </nav>
 
           <div className="flex items-center gap-2">
+            <Link
+              to="/login"
+              onClick={scrollToTopIfCurrent("/login")}
+              aria-label="Sign in"
+              className="hidden h-10 w-10 cursor-pointer items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-white/60 hover:text-neutral-900 sm:flex"
+            >
+              <User className="h-4 w-4" />
+            </Link>
+
             <Link
               to="/cart"
               onClick={scrollToTopIfCurrent("/cart")}
@@ -195,6 +205,22 @@ export function SiteLayout() {
                 </span>
               )}
             </Link>
+
+            <Link
+              to="/login"
+              onClick={() => {
+                closeMobileMenu();
+                scrollToTopIfCurrent("/login")();
+              }}
+              tabIndex={mobileMenuOpen ? 0 : -1}
+              className={`flex cursor-pointer items-center gap-2.5 rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
+                path === "/login"
+                  ? "bg-neutral-900 text-white"
+                  : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
+              }`}
+            >
+              <User className="h-4 w-4" /> Sign in
+            </Link>
           </nav>
 
           <div className="mt-auto px-10 pb-8 text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
@@ -211,7 +237,11 @@ export function SiteLayout() {
       <footer className="border-t border-neutral-900/10">
         <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-3">
           <div>
-            <img src={icon} alt="VUIS" className="h-4 w-auto" />
+            <img
+              src={icon}
+              alt="VUIS — minimal eyewear handcrafted in the Azores"
+              className="h-4 w-auto"
+            />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-500">
               Minimal eyewear, handcrafted in the Azores. Atlantic light,
               tailored.
@@ -247,6 +277,14 @@ export function SiteLayout() {
                   Contact
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/login"
+                  className="cursor-pointer transition-colors hover:text-neutral-900"
+                >
+                  Sign in
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -271,6 +309,14 @@ export function SiteLayout() {
                   Privacy policy
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/cookie-policy"
+                  className="cursor-pointer transition-colors hover:text-neutral-900"
+                >
+                  Cookie policy
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
@@ -279,6 +325,8 @@ export function SiteLayout() {
           © {new Date().getFullYear()} VUIS · Made in the Azores
         </div>
       </footer>
+
+      <CookieBanner />
     </div>
   );
 }

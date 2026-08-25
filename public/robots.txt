@@ -1,14 +1,14 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
+# VUIS — https://vuiswebsite.vercel.app
+# The storefront is fully crawlable; only transactional and account
+# routes are excluded because they hold no indexable content.
 
 User-agent: *
 Allow: /
+Disallow: /cart
+Disallow: /login
+
+# Tracking parameters add no unique content
+Disallow: /*?utm_
+Disallow: /*?fbclid=
+
+Sitemap: https://vuiswebsite.vercel.app/sitemap.xml

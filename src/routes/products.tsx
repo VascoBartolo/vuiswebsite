@@ -48,14 +48,15 @@ function ProductsPage() {
                 <div className="relative aspect-[4/5] overflow-hidden rounded-[1.35rem] bg-[#F0EBE1]">
                   <img
                     src={p.images[0]}
-                    alt={p.name}
+                    alt={`VUIS ${p.name} sunglasses — ${p.subtitle.toLowerCase()}`}
+                    loading="lazy"
                     className="h-full w-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.05] group-hover:opacity-0"
                   />
                   {p.images[1] && (
                     <img
                       src={p.images[1]}
-                      alt=""
-                      aria-hidden
+                      alt={`VUIS ${p.name} sunglasses, alternate view`}
+                      loading="lazy"
                       className="absolute inset-0 h-full w-full object-cover opacity-0 transition-all duration-700 ease-out group-hover:scale-[1.05] group-hover:opacity-100"
                     />
                   )}

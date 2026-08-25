@@ -382,7 +382,8 @@ function ProductPage() {
                   >
                     <img
                       src={img}
-                      alt=""
+                      alt={`${product.name} in ${color.name}, view ${idx + 1}`}
+                      loading="lazy"
                       draggable={false}
                       className="h-full w-full object-cover"
                     />
