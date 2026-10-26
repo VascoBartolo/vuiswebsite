@@ -10,7 +10,13 @@ export default defineConfig({
   plugins: [
     tsConfigPaths(),
     tanstackStart(),
-    nitro(),
+    // Only read by the azure-swa preset; Nitro otherwise falls back to node:18
+    nitro({
+      azure: { config: { platform: { apiRuntime: "node:22" } } },
+      ...(process.env.NITRO_PRESET === "azure-swa" && {
+        entry: "./azure/swa-entry.ts",
+      }),
+    }),
     viteReact(),
     tailwindcss(),
   ],
