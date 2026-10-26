@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useCopy } from "@/lib/i18n";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -51,7 +52,89 @@ function AppleMark() {
   );
 }
 
+const copy = {
+  en: {
+    eyebrowSignUp: "Create account",
+    eyebrowSignIn: "Welcome back",
+    joinLead: "Join ",
+    joinAccent: "VUIS.",
+    signInLead: "Sign ",
+    signInAccent: "in.",
+    introSignUp:
+      "Save your bag, track orders, and hear about new releases first.",
+    introSignIn: "Access your orders and saved bag.",
+    googleSignIn: "Google sign-in",
+    appleSignIn: "Apple sign-in",
+    emailSignIn: "Email sign-in",
+    accountCreation: "Account creation",
+    passwordReset: "Password reset",
+    soonTitle: "Accounts are coming soon",
+    soonDescription: (label: string) =>
+      `${label} will be enabled once checkout goes live.`,
+    continueGoogle: "Continue with Google",
+    continueApple: "Continue with Apple",
+    or: "or",
+    name: "Name",
+    email: "Email",
+    emailPlaceholder: "you@example.com",
+    password: "Password",
+    hidePassword: "Hide password",
+    showPassword: "Show password",
+    passwordHint: "At least 8 characters.",
+    forgotPassword: "Forgot your password?",
+    createAccount: "Create account",
+    signIn: "Sign in",
+    haveAccount: "Already have an account?",
+    newHere: "New to VUIS?",
+    createOne: "Create one",
+    termsLead: "By continuing you agree to our",
+    privacyPolicy: "privacy policy",
+    and: "and",
+    cookiePolicy: "cookie policy",
+  },
+  pt: {
+    eyebrowSignUp: "Criar conta",
+    eyebrowSignIn: "Bem-vindo de volta",
+    joinLead: "Junte-se à ",
+    joinAccent: "VUIS.",
+    signInLead: "Iniciar ",
+    signInAccent: "sessão.",
+    introSignUp:
+      "Guarde o seu saco, acompanhe as suas encomendas e conheça os novos lançamentos antes de todos.",
+    introSignIn: "Aceda às suas encomendas e ao seu saco.",
+    googleSignIn: "Início de sessão com Google",
+    appleSignIn: "Início de sessão com Apple",
+    emailSignIn: "Início de sessão com email",
+    accountCreation: "Criação de conta",
+    passwordReset: "Recuperação da palavra-passe",
+    soonTitle: "Contas disponíveis em breve",
+    soonDescription: (label: string) =>
+      `${label}: disponível assim que as encomendas online abrirem.`,
+    continueGoogle: "Continuar com Google",
+    continueApple: "Continuar com Apple",
+    or: "ou",
+    name: "Nome",
+    email: "Email",
+    emailPlaceholder: "nome@exemplo.pt",
+    password: "Palavra-passe",
+    hidePassword: "Ocultar palavra-passe",
+    showPassword: "Mostrar palavra-passe",
+    passwordHint: "Mínimo de 8 caracteres.",
+    forgotPassword: "Esqueceu-se da palavra-passe?",
+    createAccount: "Criar conta",
+    signIn: "Iniciar sessão",
+    haveAccount: "Já tem conta?",
+    newHere: "Novo na VUIS?",
+    createOne: "Criar conta",
+    termsLead: "Ao continuar, aceita a nossa",
+    privacyPolicy: "política de privacidade",
+    and: "e a",
+    cookiePolicy: "política de cookies",
+  },
+};
+
 function LoginPage() {
+  const c = useCopy(copy);
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
@@ -62,8 +145,8 @@ function LoginPage() {
     setPending(label);
     setTimeout(() => {
       setPending(null);
-      toast("Accounts are coming soon", {
-        description: `${label} will be enabled once checkout goes live.`,
+      toast(c.soonTitle, {
+        description: c.soonDescription(label),
       });
     }, 600);
   };
@@ -78,23 +161,23 @@ function LoginPage() {
       <div className="relative mx-auto flex min-h-[80vh] max-w-md flex-col justify-center px-6 pb-24 pt-32">
         <div className="animate-fade-up text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.4em] text-[#A98B54]">
-            {isSignUp ? "Create account" : "Welcome back"}
+            {isSignUp ? c.eyebrowSignUp : c.eyebrowSignIn}
           </p>
           <h1 className="mt-4 text-4xl font-semibold tracking-[-0.03em]">
             {isSignUp ? (
               <>
-                Join <span className="text-gradient-warm">VUIS.</span>
+                {c.joinLead}
+                <span className="text-gradient-warm">{c.joinAccent}</span>
               </>
             ) : (
               <>
-                Sign <span className="text-gradient-warm">in.</span>
+                {c.signInLead}
+                <span className="text-gradient-warm">{c.signInAccent}</span>
               </>
             )}
           </h1>
           <p className="mx-auto mt-4 max-w-xs text-sm leading-relaxed text-neutral-500">
-            {isSignUp
-              ? "Save your bag, track orders, and hear about numbered releases first."
-              : "Access your orders, saved bag, and numbered series registry."}
+            {isSignUp ? c.introSignUp : c.introSignIn}
           </p>
         </div>
 
@@ -103,37 +186,37 @@ function LoginPage() {
           <div className="space-y-2.5">
             <button
               type="button"
-              onClick={() => notYetAvailable("Google sign-in")}
+              onClick={() => notYetAvailable(c.googleSignIn)}
               disabled={pending !== null}
               className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-full border border-neutral-900/15 bg-white/80 py-3.5 text-sm font-semibold text-neutral-800 transition-transform duration-300 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {pending === "Google sign-in" ? (
+              {pending === c.googleSignIn ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <GoogleMark />
               )}
-              Continue with Google
+              {c.continueGoogle}
             </button>
 
             <button
               type="button"
-              onClick={() => notYetAvailable("Apple sign-in")}
+              onClick={() => notYetAvailable(c.appleSignIn)}
               disabled={pending !== null}
               className="flex w-full cursor-pointer items-center justify-center gap-3 rounded-full bg-neutral-900 py-3.5 text-sm font-semibold text-white transition-transform duration-300 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {pending === "Apple sign-in" ? (
+              {pending === c.appleSignIn ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <AppleMark />
               )}
-              Continue with Apple
+              {c.continueApple}
             </button>
           </div>
 
           <div className="my-6 flex items-center gap-4">
             <span className="h-px flex-1 bg-neutral-900/10" />
             <span className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
-              or
+              {c.or}
             </span>
             <span className="h-px flex-1 bg-neutral-900/10" />
           </div>
@@ -142,7 +225,7 @@ function LoginPage() {
           <form
             onSubmit={(event) => {
               event.preventDefault();
-              notYetAvailable(isSignUp ? "Account creation" : "Email sign-in");
+              notYetAvailable(isSignUp ? c.accountCreation : c.emailSignIn);
             }}
             className="space-y-4"
           >
@@ -152,7 +235,7 @@ function LoginPage() {
                   htmlFor="name"
                   className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400"
                 >
-                  Name
+                  {c.name}
                 </label>
                 <input
                   id="name"
@@ -170,7 +253,7 @@ function LoginPage() {
                 htmlFor="email"
                 className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400"
               >
-                Email
+                {c.email}
               </label>
               <input
                 id="email"
@@ -178,7 +261,7 @@ function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                placeholder="you@example.com"
+                placeholder={c.emailPlaceholder}
                 className="mt-2 h-12 w-full rounded-2xl border border-neutral-900/10 bg-white/70 px-4 text-sm backdrop-blur-sm placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900/20"
               />
             </div>
@@ -188,7 +271,7 @@ function LoginPage() {
                 htmlFor="password"
                 className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400"
               >
-                Password
+                {c.password}
               </label>
               <div className="relative mt-2">
                 <input
@@ -203,7 +286,7 @@ function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? c.hidePassword : c.showPassword}
                   className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-neutral-400 transition-colors hover:text-neutral-800"
                 >
                   {showPassword ? (
@@ -215,7 +298,7 @@ function LoginPage() {
               </div>
               {isSignUp && (
                 <p className="mt-2 text-xs text-neutral-400">
-                  At least 8 characters.
+                  {c.passwordHint}
                 </p>
               )}
             </div>
@@ -223,10 +306,10 @@ function LoginPage() {
             {!isSignUp && (
               <button
                 type="button"
-                onClick={() => notYetAvailable("Password reset")}
+                onClick={() => notYetAvailable(c.passwordReset)}
                 className="cursor-pointer text-xs font-semibold text-neutral-500 underline underline-offset-4 transition-colors hover:text-neutral-900"
               >
-                Forgot your password?
+                {c.forgotPassword}
               </button>
             )}
 
@@ -235,39 +318,39 @@ function LoginPage() {
               disabled={pending !== null}
               className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-neutral-900 py-3.5 text-sm font-semibold text-white shadow-[0_20px_45px_-14px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {pending === "Email sign-in" || pending === "Account creation" ? (
+              {pending === c.emailSignIn || pending === c.accountCreation ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : null}
-              {isSignUp ? "Create account" : "Sign in"}
+              {isSignUp ? c.createAccount : c.signIn}
             </button>
           </form>
 
           <p className="mt-6 text-center text-xs text-neutral-500">
-            {isSignUp ? "Already have an account?" : "New to VUIS?"}{" "}
+            {isSignUp ? c.haveAccount : c.newHere}{" "}
             <button
               type="button"
               onClick={() => setMode(isSignUp ? "signin" : "signup")}
               className="cursor-pointer font-semibold text-neutral-900 underline underline-offset-4"
             >
-              {isSignUp ? "Sign in" : "Create one"}
+              {isSignUp ? c.signIn : c.createOne}
             </button>
           </p>
         </div>
 
         <p className="animate-fade-up delay-200 mx-auto mt-6 max-w-xs text-center text-xs leading-relaxed text-neutral-400">
-          By continuing you agree to our{" "}
+          {c.termsLead}{" "}
           <Link
             to="/privacy-policy"
             className="cursor-pointer underline underline-offset-2 hover:text-neutral-700"
           >
-            privacy policy
+            {c.privacyPolicy}
           </Link>{" "}
-          and{" "}
+          {c.and}{" "}
           <Link
             to="/cookie-policy"
             className="cursor-pointer underline underline-offset-2 hover:text-neutral-700"
           >
-            cookie policy
+            {c.cookiePolicy}
           </Link>
           .
         </p>

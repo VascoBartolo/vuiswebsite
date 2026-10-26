@@ -242,6 +242,16 @@
     border: 1px solid rgba(255,255,255,0.75);
     box-shadow: 0 8px 32px rgba(28,25,23,0.12), inset 0 1px 0 rgba(255,255,255,0.85);
   }
+  /* For glass panels that MOVE. backdrop-filter forces Chrome to re-sample and
+     pixel-snap the backdrop every frame, so an animated blurred panel drifts in
+     visible 1px steps. This drops the blur and compensates with opacity, which
+     reads the same over photography but rasterises as a plain composited layer. */
+  .glass-float {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.84));
+    border: 1px solid rgba(255,255,255,0.8);
+    box-shadow: 0 8px 32px rgba(28,25,23,0.12), inset 0 1px 0 rgba(255,255,255,0.85);
+    will-change: transform;
+  }
   .glass-dark {
     background: linear-gradient(135deg, rgba(20,18,16,0.55), rgba(20,18,16,0.35));
     -webkit-backdrop-filter: blur(18px) saturate(140%);

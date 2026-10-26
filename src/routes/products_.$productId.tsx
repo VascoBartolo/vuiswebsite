@@ -23,8 +23,75 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { products } from "@/lib/products";
+import { formatPrice, materialsFor, products } from "@/lib/products";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useCart } from "@/lib/cart";
+import { useCopy, useLang } from "@/lib/i18n";
+
+const copy = {
+  en: {
+    image: "image",
+    enlarged: "enlarged",
+    closeGallery: "Close gallery",
+    prev: "Previous image",
+    next: "Next image",
+    notFound: "Product not found",
+    back: "Back to the Collection",
+    collection: "Collection",
+    added: "added to bag",
+    expand: (n: number, total: number) => `Expand image ${n} of ${total}`,
+    show: (n: number, total: number) => `Show image ${n} of ${total}`,
+    in: "in",
+    view: "view",
+    was: "Was ",
+    launchOffer: "Launch offer",
+    launchNote: "Introductory pricing to celebrate the launch of VUIS.",
+    colour: "Colour",
+    dimensions: "Dimensions",
+    variance: "Measurements may vary slightly by 1–2 mm.",
+    materials: "Materials",
+    qty: "Qty",
+    decrease: "Decrease quantity",
+    increase: "Increase quantity",
+    addToBag: "Add to bag",
+    buyNow: "Buy now",
+    perks: "Free EU shipping · 30-day returns · Lifetime hinge service",
+  },
+  pt: {
+    image: "imagem",
+    enlarged: "ampliada",
+    closeGallery: "Fechar galeria",
+    prev: "Imagem anterior",
+    next: "Imagem seguinte",
+    notFound: "Produto não encontrado",
+    back: "Voltar à Coleção",
+    collection: "Coleção",
+    added: "adicionado ao saco",
+    expand: (n: number, total: number) => `Ampliar imagem ${n} de ${total}`,
+    show: (n: number, total: number) => `Mostrar imagem ${n} de ${total}`,
+    in: "em",
+    view: "vista",
+    was: "Antes ",
+    launchOffer: "Oferta de lançamento",
+    launchNote: "Preço especial para celebrar o lançamento da VUIS.",
+    colour: "Cor",
+    dimensions: "Dimensões",
+    variance: "As medidas podem variar ligeiramente entre 1–2 mm.",
+    materials: "Materiais",
+    qty: "Qtd.",
+    decrease: "Diminuir quantidade",
+    increase: "Aumentar quantidade",
+    addToBag: "Adicionar ao saco",
+    buyNow: "Comprar agora",
+    perks:
+      "Envio gratuito na UE · Devoluções em 30 dias · Assistência vitalícia às dobradiças",
+  },
+};
 
 export const Route = createFileRoute("/products_/$productId")({
   loader: ({ params }) => {
@@ -81,6 +148,7 @@ function Lightbox({
   const [index, setIndex] = useState(startIndex);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const { onPointerDown, isTap } = useTapGuard();
+  const c = useCopy(copy);
 
   useEffect(() => {
     if (!emblaApi) return;
@@ -141,7 +209,7 @@ function Lightbox({
             >
               <img
                 src={img}
-                alt={`${alt} — image ${idx + 1}`}
+                alt={`${alt} — ${c.image} ${idx + 1}`}
                 draggable={false}
                 onClick={(event) => {
                   event.stopPropagation();
@@ -162,7 +230,7 @@ function Lightbox({
         >
           <img
             src={images[index]}
-            alt={`${alt}, enlarged`}
+            alt={`${alt}, ${c.enlarged}`}
             draggable={false}
             className="h-full w-full select-none object-contain transition-transform duration-300 ease-out"
             style={{
@@ -177,7 +245,7 @@ function Lightbox({
         type="button"
         onClick={onClose}
         className="glass-ghost-light absolute right-5 top-5 z-10 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110"
-        aria-label="Close gallery"
+        aria-label={c.closeGallery}
       >
         <X className="h-5 w-5" />
       </button>
@@ -188,7 +256,7 @@ function Lightbox({
             type="button"
             onClick={() => emblaApi?.scrollPrev()}
             className="glass-ghost-light absolute left-6 top-1/2 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110 md:flex"
-            aria-label="Previous image"
+            aria-label={c.prev}
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -196,7 +264,7 @@ function Lightbox({
             type="button"
             onClick={() => emblaApi?.scrollNext()}
             className="glass-ghost-light absolute right-6 top-1/2 hidden h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full transition-transform hover:scale-110 md:flex"
-            aria-label="Next image"
+            aria-label={c.next}
           >
             <ChevronRight className="h-5 w-5" />
           </button>
@@ -219,6 +287,9 @@ function ProductPage() {
 
   const { add } = useCart();
   const navigate = useNavigate();
+  const c = useCopy(copy);
+  const { lang } = useLang();
+  const galleryTrack = useRef<HTMLDivElement>(null);
 
   const [colorId, setColorId] = useState(product?.colors[0]?.id);
   const [imgIndex, setImgIndex] = useState(0);
@@ -254,12 +325,28 @@ function ProductPage() {
     };
   }, [emblaApi]);
 
-  // A colour swap changes the slide set — rebuild and return to the first frame
+  // Warm the cache for every colour so a swap never waits on the network
+  useEffect(() => {
+    product?.colors.forEach((variant) =>
+      variant.images.forEach((src) => {
+        new Image().src = src;
+      }),
+    );
+  }, [product]);
+
+  // A colour swap changes the slide set — rebuild, return to the first frame
+  // and soften the image change with a short fade
+  const firstImages = useRef(images);
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.reInit();
     emblaApi.scrollTo(0, true);
     setImgIndex(0);
+    if (images === firstImages.current) return;
+    galleryTrack.current?.animate([{ opacity: 0.35 }, { opacity: 1 }], {
+      duration: 450,
+      easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+    });
   }, [emblaApi, images]);
 
   const openLightbox = useCallback(
@@ -275,13 +362,13 @@ function ProductPage() {
     return (
       <div className="mx-auto max-w-3xl px-6 pb-24 pt-44 text-center">
         <h1 className="text-4xl font-semibold tracking-[-0.03em]">
-          Product not found
+          {c.notFound}
         </h1>
         <Link
           to="/products"
           className="mt-8 inline-flex cursor-pointer items-center gap-2 rounded-full bg-neutral-900 px-8 py-4 text-sm font-semibold text-white"
         >
-          Back to the Collection
+          {c.back}
         </Link>
       </div>
     );
@@ -289,7 +376,7 @@ function ProductPage() {
 
   const handleAdd = () => {
     add(product.id, qty, color.id);
-    toast.success(`${product.name} · ${color.name} added to bag`);
+    toast.success(`${product.name} · ${color.name[lang]} ${c.added}`);
   };
 
   const handleBuy = () => {
@@ -308,7 +395,7 @@ function ProductPage() {
           to="/products"
           className="inline-flex cursor-pointer items-center gap-2 text-sm font-semibold text-neutral-500 transition-colors hover:text-neutral-900"
         >
-          <ArrowLeft className="h-4 w-4" /> Collection
+          <ArrowLeft className="h-4 w-4" /> {c.collection}
         </Link>
 
         <div className="mt-6 grid gap-8 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
@@ -322,18 +409,18 @@ function ProductPage() {
                 ref={emblaRef}
                 onPointerDown={onPointerDown}
               >
-                <div className="flex touch-pan-y">
+                <div ref={galleryTrack} className="flex touch-pan-y">
                   {images.map((img, idx) => (
                     <button
-                      key={`${color.id}-${idx}`}
+                      key={idx}
                       type="button"
                       onClick={(event) => openLightbox(idx, event)}
-                      className="block aspect-[4/5] min-w-0 flex-[0_0_100%] cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-                      aria-label={`Expand image ${idx + 1} of ${images.length}`}
+                      className="block aspect-square min-w-0 flex-[0_0_100%] cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                      aria-label={c.expand(idx + 1, images.length)}
                     >
                       <img
                         src={img}
-                        alt={`${product.name} — ${color.name}`}
+                        alt={`${product.name} — ${color.name[lang]}`}
                         draggable={false}
                         className="h-full w-full select-none object-cover"
                       />
@@ -348,7 +435,7 @@ function ProductPage() {
                     type="button"
                     onClick={() => emblaApi?.scrollPrev()}
                     className="glass-ghost absolute left-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full opacity-70 transition-all duration-300 group-hover:opacity-100 md:flex"
-                    aria-label="Previous image"
+                    aria-label={c.prev}
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
@@ -356,7 +443,7 @@ function ProductPage() {
                     type="button"
                     onClick={() => emblaApi?.scrollNext()}
                     className="glass-ghost absolute right-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full opacity-70 transition-all duration-300 group-hover:opacity-100 md:flex"
-                    aria-label="Next image"
+                    aria-label={c.next}
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
@@ -369,7 +456,7 @@ function ProductPage() {
               <div className="mt-4 flex gap-2.5 sm:gap-3">
                 {images.map((img, idx) => (
                   <button
-                    key={`${color.id}-thumb-${idx}`}
+                    key={idx}
                     type="button"
                     onClick={() => emblaApi?.scrollTo(idx)}
                     className={`aspect-square w-full min-w-0 max-w-20 flex-1 cursor-pointer overflow-hidden rounded-2xl border bg-[#F0EBE1] transition-all duration-300 ${
@@ -377,12 +464,12 @@ function ProductPage() {
                         ? "border-neutral-900 ring-2 ring-neutral-900 ring-offset-2 ring-offset-[#FAF7F1]"
                         : "border-white/70 opacity-70 hover:opacity-100"
                     }`}
-                    aria-label={`Show image ${idx + 1} of ${images.length}`}
+                    aria-label={c.show(idx + 1, images.length)}
                     aria-current={idx === imgIndex ? "true" : undefined}
                   >
                     <img
                       src={img}
-                      alt={`${product.name} in ${color.name}, view ${idx + 1}`}
+                      alt={`${product.name} ${c.in} ${color.name[lang]}, ${c.view} ${idx + 1}`}
                       loading="lazy"
                       draggable={false}
                       className="h-full w-full object-cover"
@@ -396,70 +483,112 @@ function ProductPage() {
           {/* ── Details ── */}
           <div className="animate-fade-up delay-100">
             <p className="text-[11px] font-semibold uppercase tracking-[0.4em] text-[#A98B54]">
-              {product.subtitle}
+              {product.subtitle[lang]}
             </p>
             <h1 className="mt-3 text-4xl font-semibold tracking-[-0.03em] md:text-5xl">
               {product.name}
             </h1>
-            <p className="mt-3 text-2xl font-bold tabular-nums">
-              €{product.price}
-            </p>
+            <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+              <p className="text-2xl font-bold tabular-nums">
+                {formatPrice(color.price)}
+              </p>
+              <p className="text-base tabular-nums text-neutral-400 line-through">
+                <span className="sr-only">{c.was}</span>
+                {formatPrice(color.compareAtPrice)}
+              </p>
+              <span className="rounded-full bg-[#A98B54]/12 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.25em] text-[#8A6F3F]">
+                {c.launchOffer}
+              </span>
+            </div>
+            <p className="mt-2 text-xs text-neutral-500">{c.launchNote}</p>
 
             <p className="mt-5 max-w-md text-sm leading-relaxed text-neutral-500 md:text-base">
-              {product.description}
+              {product.description[lang]}
             </p>
 
             {/* colour picker */}
             <div className="mt-8">
               <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
-                Colour — <span className="text-neutral-700">{color.name}</span>
+                {c.colour} —{" "}
+                <span className="text-neutral-700">{color.name[lang]}</span>
               </p>
               <div className="mt-3 flex gap-3">
-                {product.colors.map((c) => (
+                {product.colors.map((option) => (
                   <button
-                    key={c.id}
+                    key={option.id}
                     type="button"
-                    onClick={() => setColorId(c.id)}
-                    title={c.name}
-                    aria-label={`Colour: ${c.name}`}
-                    aria-pressed={c.id === color.id}
+                    onClick={() => setColorId(option.id)}
+                    title={option.name[lang]}
+                    aria-label={`${c.colour}: ${option.name[lang]}`}
+                    aria-pressed={option.id === color.id}
                     className={`h-10 w-10 cursor-pointer rounded-full border border-neutral-900/15 transition-all duration-300 ${
-                      c.id === color.id
+                      option.id === color.id
                         ? "ring-2 ring-neutral-900 ring-offset-2 ring-offset-[#FAF7F1]"
                         : "hover:scale-110"
                     }`}
-                    style={{ background: c.swatch }}
+                    style={{ background: option.swatch }}
                   />
                 ))}
               </div>
             </div>
 
             {/* details */}
-            <div className="glass mt-8 rounded-2xl p-6">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
-                Details
-              </p>
-              <ul className="mt-3 space-y-2 text-sm text-neutral-600">
-                {product.details.map((d) => (
-                  <li key={d} className="flex items-start gap-2.5">
-                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#A98B54]" />
-                    {d}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <Accordion
+              type="multiple"
+              className="glass mt-8 rounded-2xl px-6 py-1"
+            >
+              <AccordionItem
+                value="dimensions"
+                className="border-neutral-900/10"
+              >
+                <AccordionTrigger className="cursor-pointer text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-500 hover:no-underline">
+                  {c.dimensions}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <dl className="divide-y divide-neutral-900/5 text-sm">
+                    {product.dimensions.map((d) => (
+                      <div
+                        key={d.label.en}
+                        className="flex justify-between py-2"
+                      >
+                        <dt className="text-neutral-500">{d.label[lang]}</dt>
+                        <dd className="font-semibold tabular-nums">
+                          {d.value}
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="mt-3 text-xs text-neutral-400">{c.variance}</p>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="materials" className="border-b-0">
+                <AccordionTrigger className="cursor-pointer text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-500 hover:no-underline">
+                  {c.materials}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="space-y-2 text-sm text-neutral-600">
+                    {materialsFor(color, lang).map((m) => (
+                      <li key={m} className="flex items-start gap-2.5">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-[#A98B54]" />
+                        {m}
+                      </li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
 
             {/* qty + actions */}
             <div className="mt-8 flex items-center gap-4">
               <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
-                Qty
+                {c.qty}
               </p>
               <div className="flex items-center rounded-full border border-neutral-900/15 bg-white/60">
                 <button
                   type="button"
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
                   className="cursor-pointer rounded-full p-3 transition-colors hover:bg-neutral-900/5"
-                  aria-label="Decrease quantity"
+                  aria-label={c.decrease}
                 >
                   <Minus className="h-3.5 w-3.5" />
                 </button>
@@ -470,7 +599,7 @@ function ProductPage() {
                   type="button"
                   onClick={() => setQty((q) => q + 1)}
                   className="cursor-pointer rounded-full p-3 transition-colors hover:bg-neutral-900/5"
-                  aria-label="Increase quantity"
+                  aria-label={c.increase}
                 >
                   <Plus className="h-3.5 w-3.5" />
                 </button>
@@ -483,19 +612,19 @@ function ProductPage() {
                 onClick={handleAdd}
                 className="cursor-pointer rounded-full border border-neutral-900 py-3.5 text-sm font-semibold transition-colors duration-300 hover:bg-neutral-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                Add to bag
+                {c.addToBag}
               </button>
               <button
                 type="button"
                 onClick={handleBuy}
                 className="cursor-pointer rounded-full bg-neutral-900 py-3.5 text-sm font-semibold text-white shadow-[0_20px_45px_-14px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                Buy now
+                {c.buyNow}
               </button>
             </div>
 
             <p className="mt-6 text-[11px] font-semibold uppercase tracking-[0.28em] text-neutral-400">
-              Free EU shipping · 30-day returns · Lifetime hinge service
+              {c.perks}
             </p>
           </div>
         </div>
@@ -504,7 +633,7 @@ function ProductPage() {
       {lightboxIndex !== null && (
         <Lightbox
           images={images}
-          alt={`${product.name} — ${color.name}`}
+          alt={`${product.name} — ${color.name[lang]}`}
           startIndex={lightboxIndex}
           onClose={() => setLightboxIndex(null)}
         />

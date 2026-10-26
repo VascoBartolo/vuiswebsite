@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
+import { useCopy } from "@/lib/i18n";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({ meta: [{ title: "Contact — VUIS" }] }),
@@ -28,17 +29,54 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE } },
 };
 
-const details = [
-  {
-    label: "Atelier",
-    value: "Rua da Sé nº14, Angra do Heroísmo, Terceira, Azores",
+const copy = {
+  en: {
+    eyebrow: "Atelier VUIS",
+    titleLead: "Get in ",
+    titleAccent: "touch.",
+    intro:
+      "For private orders, press, or stockist inquiries — we reply within two working days.",
+    details: [
+      {
+        label: "Atelier",
+        value: "Rua da Sé nº14, Angra do Heroísmo, Terceira, Azores",
+      },
+      { label: "Email", value: "atelier@vuis.pt" },
+      { label: "Hours", value: "Monday — Friday · 10:00 — 18:00 (WET)" },
+    ],
+    sentToast: "Message sent — obrigado.",
+    name: "Name",
+    email: "Email",
+    message: "Message",
+    sent: "Sent",
+    send: "Send message",
   },
-  { label: "Email", value: "atelier@vuis.pt" },
-  { label: "Hours", value: "Monday — Friday · 10:00 — 18:00 (WET)" },
-];
+  pt: {
+    eyebrow: "Atelier VUIS",
+    titleLead: "Fale ",
+    titleAccent: "connosco.",
+    intro:
+      "Para encomendas privadas, imprensa ou pedidos de revenda — respondemos no prazo de dois dias úteis.",
+    details: [
+      {
+        label: "Atelier",
+        value: "Rua da Sé nº14, Angra do Heroísmo, Terceira, Açores",
+      },
+      { label: "Email", value: "atelier@vuis.pt" },
+      { label: "Horário", value: "Segunda — Sexta · 10:00 — 18:00 (WET)" },
+    ],
+    sentToast: "Mensagem enviada — obrigado.",
+    name: "Nome",
+    email: "Email",
+    message: "Mensagem",
+    sent: "Enviada",
+    send: "Enviar mensagem",
+  },
+};
 
 function ContactPage() {
   const [sent, setSent] = useState(false);
+  const c = useCopy(copy);
 
   return (
     <div className="relative overflow-hidden">
@@ -55,23 +93,23 @@ function ContactPage() {
             variants={item}
             className="text-[11px] font-semibold uppercase tracking-[0.4em] text-[#A98B54]"
           >
-            Atelier VUIS
+            {c.eyebrow}
           </motion.p>
 
           <motion.h1
             variants={item}
             className="mt-4 text-5xl font-semibold tracking-[-0.03em]"
           >
-            Get in <span className="text-gradient-warm">touch.</span>
+            {c.titleLead}
+            <span className="text-gradient-warm">{c.titleAccent}</span>
           </motion.h1>
 
           <motion.p variants={item} className="mt-6 max-w-md text-neutral-500">
-            For private orders, press, or stockist inquiries — we reply within
-            two working days.
+            {c.intro}
           </motion.p>
 
           <motion.div variants={container} className="mt-10 space-y-5 text-sm">
-            {details.map((d) => (
+            {c.details.map((d) => (
               <motion.div
                 key={d.label}
                 variants={item}
@@ -91,7 +129,7 @@ function ContactPage() {
           onSubmit={(e) => {
             e.preventDefault();
             setSent(true);
-            toast.success("Message sent — obrigado.");
+            toast.success(c.sentToast);
           }}
           className="space-y-5"
         >
@@ -100,7 +138,7 @@ function ContactPage() {
               htmlFor="contact-name"
               className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400"
             >
-              Name
+              {c.name}
             </label>
             <input
               id="contact-name"
@@ -116,7 +154,7 @@ function ContactPage() {
               htmlFor="contact-email"
               className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400"
             >
-              Email
+              {c.email}
             </label>
             <input
               id="contact-email"
@@ -133,7 +171,7 @@ function ContactPage() {
               htmlFor="contact-message"
               className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400"
             >
-              Message
+              {c.message}
             </label>
             <textarea
               id="contact-message"
@@ -149,7 +187,7 @@ function ContactPage() {
             type="submit"
             className="w-full cursor-pointer rounded-full bg-neutral-900 py-4 text-sm font-semibold text-white shadow-[0_20px_45px_-14px_rgba(0,0,0,0.5)] transition-transform duration-300 hover:scale-[1.02]"
           >
-            {sent ? "Sent" : "Send message"}
+            {sent ? c.sent : c.send}
           </motion.button>
         </motion.form>
       </motion.div>

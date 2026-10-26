@@ -3,6 +3,46 @@ import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Cookie } from "lucide-react";
 import { useCookieConsent } from "@/lib/cookie-consent";
+import { useCopy } from "@/lib/i18n";
+
+const copy = {
+  en: {
+    dialogLabel: "Cookie preferences",
+    title: "We use a few cookies",
+    body: "Essential cookies keep your bag and your sign-in working. With your permission we would also use analytics to understand what people look at, and marketing cookies to measure our campaigns. Read the",
+    cookiePolicy: "cookie policy",
+    necessaryTitle: "Strictly necessary",
+    necessaryDescription:
+      "Bag contents, sign-in session and security. Always on.",
+    analyticsTitle: "Analytics",
+    analyticsDescription: "Anonymous page and product statistics.",
+    marketingTitle: "Marketing",
+    marketingDescription: "Measures campaigns and ad performance.",
+    acceptAll: "Accept all",
+    saveChoices: "Save choices",
+    necessaryOnly: "Necessary only",
+    hideOptions: "Hide options",
+    customise: "Customise",
+  },
+  pt: {
+    dialogLabel: "Preferências de cookies",
+    title: "Utilizamos alguns cookies",
+    body: "Os cookies essenciais mantêm o seu saco e a sua sessão a funcionar. Com a sua autorização, utilizaríamos também cookies de análise, para perceber o que é mais visto, e cookies de marketing, para medir as nossas campanhas. Consulte a",
+    cookiePolicy: "política de cookies",
+    necessaryTitle: "Estritamente necessários",
+    necessaryDescription:
+      "Conteúdo do saco, sessão iniciada e segurança. Sempre ativos.",
+    analyticsTitle: "Análise",
+    analyticsDescription: "Estatísticas anónimas de páginas e produtos.",
+    marketingTitle: "Marketing",
+    marketingDescription: "Mede o desempenho de campanhas e anúncios.",
+    acceptAll: "Aceitar todos",
+    saveChoices: "Guardar escolhas",
+    necessaryOnly: "Apenas necessários",
+    hideOptions: "Ocultar opções",
+    customise: "Personalizar",
+  },
+};
 
 type ToggleRowProps = {
   title: string;
@@ -53,6 +93,7 @@ export function CookieBanner() {
   const { bannerOpen, acceptAll, rejectAll, save, consent } =
     useCookieConsent();
 
+  const c = useCopy(copy);
   const prefersReducedMotion = useReducedMotion();
   const [customising, setCustomising] = React.useState(false);
   const [analytics, setAnalytics] = React.useState(false);
@@ -76,7 +117,7 @@ export function CookieBanner() {
         <motion.div
           role="dialog"
           aria-live="polite"
-          aria-label="Cookie preferences"
+          aria-label={c.dialogLabel}
           initial={{ y: "110%", opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "110%", opacity: 0 }}
@@ -90,19 +131,14 @@ export function CookieBanner() {
               </span>
 
               <div className="min-w-0 flex-1">
-                <p className="text-sm font-bold text-neutral-900">
-                  We use a few cookies
-                </p>
+                <p className="text-sm font-bold text-neutral-900">{c.title}</p>
                 <p className="mt-1 text-xs leading-relaxed text-neutral-600 md:text-sm">
-                  Essential cookies keep your bag and your sign-in working. With
-                  your permission we would also use analytics to understand what
-                  people look at, and marketing cookies to measure our
-                  campaigns. Read the{" "}
+                  {c.body}{" "}
                   <Link
                     to="/cookie-policy"
                     className="cursor-pointer font-semibold underline underline-offset-2 hover:text-neutral-900"
                   >
-                    cookie policy
+                    {c.cookiePolicy}
                   </Link>
                   .
                 </p>
@@ -118,20 +154,20 @@ export function CookieBanner() {
                     >
                       <div className="mt-4 space-y-2">
                         <ToggleRow
-                          title="Strictly necessary"
-                          description="Bag contents, sign-in session and security. Always on."
+                          title={c.necessaryTitle}
+                          description={c.necessaryDescription}
                           checked
                           disabled
                         />
                         <ToggleRow
-                          title="Analytics"
-                          description="Anonymous page and product statistics."
+                          title={c.analyticsTitle}
+                          description={c.analyticsDescription}
                           checked={analytics}
                           onChange={setAnalytics}
                         />
                         <ToggleRow
-                          title="Marketing"
-                          description="Measures campaigns and ad performance."
+                          title={c.marketingTitle}
+                          description={c.marketingDescription}
                           checked={marketing}
                           onChange={setMarketing}
                         />
@@ -146,7 +182,7 @@ export function CookieBanner() {
                     onClick={acceptAll}
                     className="cursor-pointer rounded-full bg-neutral-900 px-6 py-3 text-xs font-semibold text-white transition-transform duration-300 hover:scale-[1.04] md:text-sm"
                   >
-                    Accept all
+                    {c.acceptAll}
                   </button>
 
                   {customising ? (
@@ -155,7 +191,7 @@ export function CookieBanner() {
                       onClick={() => save({ analytics, marketing })}
                       className="cursor-pointer rounded-full border border-neutral-900 px-6 py-3 text-xs font-semibold text-neutral-900 transition-colors duration-300 hover:bg-neutral-900 hover:text-white md:text-sm"
                     >
-                      Save choices
+                      {c.saveChoices}
                     </button>
                   ) : (
                     <button
@@ -163,7 +199,7 @@ export function CookieBanner() {
                       onClick={rejectAll}
                       className="cursor-pointer rounded-full border border-neutral-900 px-6 py-3 text-xs font-semibold text-neutral-900 transition-colors duration-300 hover:bg-neutral-900 hover:text-white md:text-sm"
                     >
-                      Necessary only
+                      {c.necessaryOnly}
                     </button>
                   )}
 
@@ -172,7 +208,7 @@ export function CookieBanner() {
                     onClick={() => setCustomising((c) => !c)}
                     className="cursor-pointer px-3 py-3 text-xs font-semibold text-neutral-500 underline underline-offset-4 transition-colors hover:text-neutral-900 md:text-sm"
                   >
-                    {customising ? "Hide options" : "Customise"}
+                    {customising ? c.hideOptions : c.customise}
                   </button>
                 </div>
               </div>

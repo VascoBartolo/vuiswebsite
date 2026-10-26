@@ -3,17 +3,83 @@ import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { Menu, ShoppingBag, User, X } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { useCopy, useLang, type Lang } from "@/lib/i18n";
 import { CookieBanner } from "@/components/CookieBanner";
 import icon from "@/assets/vuis-icon.png";
 
-const nav = [
-  { to: "/", label: "Home" },
-  { to: "/products", label: "Collection" },
-  { to: "/contact", label: "Contact" },
-] as const;
+const copy = {
+  en: {
+    nav: { "/": "Home", "/products": "Collection", "/contact": "Contact" },
+    bag: "Bag",
+    signIn: "Sign in",
+    openMenu: "Open menu",
+    closeMenu: "Close menu",
+    language: "Language",
+    madeIn: "Designed in the Azores",
+    tagline:
+      "Minimal eyewear, designed in the Azores. Atlantic light, tailored.",
+    logoAlt: "VUIS — minimal eyewear designed in the Azores",
+    shop: "Shop",
+    policies: "Policies",
+    refund: "Refund policy",
+    privacy: "Privacy policy",
+    cookies: "Cookie policy",
+  },
+  pt: {
+    nav: { "/": "Início", "/products": "Coleção", "/contact": "Contacto" },
+    bag: "Saco",
+    signIn: "Entrar",
+    openMenu: "Abrir menu",
+    closeMenu: "Fechar menu",
+    language: "Idioma",
+    madeIn: "Desenhado nos Açores",
+    tagline:
+      "Óculos minimalistas, desenhados nos Açores. A luz do Atlântico, à medida.",
+    logoAlt: "VUIS — óculos minimalistas desenhados nos Açores",
+    shop: "Loja",
+    policies: "Políticas",
+    refund: "Política de devoluções",
+    privacy: "Política de privacidade",
+    cookies: "Política de cookies",
+  },
+};
+
+const nav = ["/", "/products", "/contact"] as const;
+
+const langs: Lang[] = ["en", "pt"];
+
+function LanguagePicker({ className = "" }: { className?: string }) {
+  const { lang, setLang } = useLang();
+  const c = useCopy(copy);
+
+  return (
+    <div
+      role="group"
+      aria-label={c.language}
+      className={`flex items-center rounded-full border border-neutral-900/10 p-0.5 text-[10px] font-bold tracking-[0.15em] ${className}`}
+    >
+      {langs.map((l) => (
+        <button
+          key={l}
+          type="button"
+          onClick={() => setLang(l)}
+          aria-pressed={lang === l}
+          className={`cursor-pointer rounded-full px-2.5 py-1.5 uppercase transition-colors duration-300 ${
+            lang === l
+              ? "bg-neutral-900 text-white"
+              : "text-neutral-500 hover:text-neutral-900"
+          }`}
+        >
+          {l}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function SiteLayout() {
   const { count } = useCart();
+  const c = useCopy(copy);
   const prefersReducedMotion = useReducedMotion();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
@@ -73,25 +139,26 @@ export function SiteLayout() {
           </Link>
 
           <nav className="hidden items-center gap-9 text-[13px] font-medium md:flex">
-            {nav.map((n) => (
+            {nav.map((to) => (
               <Link
-                key={n.to}
-                to={n.to}
-                onClick={scrollToTopIfCurrent(n.to)}
+                key={to}
+                to={to}
+                onClick={scrollToTopIfCurrent(to)}
                 className={`cursor-pointer transition-colors hover:text-neutral-900 ${
-                  path === n.to ? "text-neutral-900" : "text-neutral-500"
+                  path === to ? "text-neutral-900" : "text-neutral-500"
                 }`}
               >
-                {n.label}
+                {c.nav[to]}
               </Link>
             ))}
           </nav>
 
           <div className="flex items-center gap-2">
+            <LanguagePicker className="hidden sm:flex" />
             <Link
               to="/login"
               onClick={scrollToTopIfCurrent("/login")}
-              aria-label="Sign in"
+              aria-label={c.signIn}
               className="hidden h-10 w-10 cursor-pointer items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-white/60 hover:text-neutral-900 sm:flex"
             >
               <User className="h-4 w-4" />
@@ -104,7 +171,7 @@ export function SiteLayout() {
             >
               <ShoppingBag className="h-3.5 w-3.5" />
               <span className="tabular-nums">
-                Bag ·{" "}
+                {c.bag} ·{" "}
                 <motion.span
                   key={count}
                   initial={{ y: prefersReducedMotion ? 0 : -8, opacity: 0 }}
@@ -121,7 +188,7 @@ export function SiteLayout() {
               type="button"
               className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-white/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
               onClick={() => setMobileMenuOpen(true)}
-              aria-label="Open menu"
+              aria-label={c.openMenu}
               aria-expanded={mobileMenuOpen}
             >
               <Menu className="h-4 w-4" />
@@ -142,7 +209,7 @@ export function SiteLayout() {
               transition={{ duration: prefersReducedMotion ? 0 : 0.3 }}
               className="absolute inset-0 bg-black/40 backdrop-blur-sm"
               onClick={closeMobileMenu}
-              aria-label="Close menu"
+              aria-label={c.closeMenu}
             />
 
             <motion.aside
@@ -172,28 +239,28 @@ export function SiteLayout() {
                   type="button"
                   className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full text-neutral-900 transition-colors hover:bg-neutral-900/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   onClick={closeMobileMenu}
-                  aria-label="Close menu"
+                  aria-label={c.closeMenu}
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
               <nav className="flex flex-col gap-1 px-6 py-6">
-                {nav.map((n) => (
+                {nav.map((to) => (
                   <Link
-                    key={n.to}
-                    to={n.to}
+                    key={to}
+                    to={to}
                     onClick={() => {
                       closeMobileMenu();
-                      scrollToTopIfCurrent(n.to)();
+                      scrollToTopIfCurrent(to)();
                     }}
                     className={`cursor-pointer rounded-2xl px-4 py-3.5 text-lg font-semibold tracking-tight transition-colors ${
-                      path === n.to
+                      path === to
                         ? "bg-neutral-900 text-white"
                         : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
                     }`}
                   >
-                    {n.label}
+                    {c.nav[to]}
                   </Link>
                 ))}
 
@@ -209,7 +276,7 @@ export function SiteLayout() {
                       : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
                   }`}
                 >
-                  <span>Bag</span>
+                  <span>{c.bag}</span>
                   {count > 0 && (
                     <span className="rounded-full bg-[#CBB588] px-2.5 py-1 text-[11px] font-bold text-neutral-900 tabular-nums">
                       {count}
@@ -229,12 +296,13 @@ export function SiteLayout() {
                       : "text-neutral-600 hover:bg-neutral-900/5 hover:text-neutral-900"
                   }`}
                 >
-                  <User className="h-4 w-4" /> Sign in
+                  <User className="h-4 w-4" /> {c.signIn}
                 </Link>
               </nav>
 
-              <div className="mt-auto px-10 pb-8 text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
-                Made in the Azores
+              <div className="mt-auto flex items-center justify-between px-10 pb-8 text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
+                {c.madeIn}
+                <LanguagePicker />
               </div>
             </motion.aside>
           </div>
@@ -249,20 +317,15 @@ export function SiteLayout() {
       <footer className="border-t border-neutral-900/10">
         <div className="mx-auto grid max-w-6xl gap-10 px-6 py-14 md:grid-cols-3">
           <div>
-            <img
-              src={icon}
-              alt="VUIS — minimal eyewear handcrafted in the Azores"
-              className="h-4 w-auto"
-            />
+            <img src={icon} alt={c.logoAlt} className="h-4 w-auto" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-neutral-500">
-              Minimal eyewear, handcrafted in the Azores. Atlantic light,
-              tailored.
+              {c.tagline}
             </p>
           </div>
 
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
-              Shop
+              {c.shop}
             </div>
             <ul className="mt-4 space-y-2.5 text-sm font-medium text-neutral-600">
               <li>
@@ -270,7 +333,7 @@ export function SiteLayout() {
                   to="/products"
                   className="cursor-pointer transition-colors hover:text-neutral-900"
                 >
-                  Collection
+                  {c.nav["/products"]}
                 </Link>
               </li>
               <li>
@@ -278,7 +341,7 @@ export function SiteLayout() {
                   to="/cart"
                   className="cursor-pointer transition-colors hover:text-neutral-900"
                 >
-                  Bag
+                  {c.bag}
                 </Link>
               </li>
               <li>
@@ -286,7 +349,7 @@ export function SiteLayout() {
                   to="/contact"
                   className="cursor-pointer transition-colors hover:text-neutral-900"
                 >
-                  Contact
+                  {c.nav["/contact"]}
                 </Link>
               </li>
               <li>
@@ -294,7 +357,7 @@ export function SiteLayout() {
                   to="/login"
                   className="cursor-pointer transition-colors hover:text-neutral-900"
                 >
-                  Sign in
+                  {c.signIn}
                 </Link>
               </li>
             </ul>
@@ -302,7 +365,7 @@ export function SiteLayout() {
 
           <div>
             <div className="text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
-              Policies
+              {c.policies}
             </div>
             <ul className="mt-4 space-y-2.5 text-sm font-medium text-neutral-600">
               <li>
@@ -310,7 +373,7 @@ export function SiteLayout() {
                   to="/refund-policy"
                   className="cursor-pointer transition-colors hover:text-neutral-900"
                 >
-                  Refund policy
+                  {c.refund}
                 </Link>
               </li>
               <li>
@@ -318,7 +381,7 @@ export function SiteLayout() {
                   to="/privacy-policy"
                   className="cursor-pointer transition-colors hover:text-neutral-900"
                 >
-                  Privacy policy
+                  {c.privacy}
                 </Link>
               </li>
               <li>
@@ -326,7 +389,7 @@ export function SiteLayout() {
                   to="/cookie-policy"
                   className="cursor-pointer transition-colors hover:text-neutral-900"
                 >
-                  Cookie policy
+                  {c.cookies}
                 </Link>
               </li>
             </ul>
@@ -334,7 +397,7 @@ export function SiteLayout() {
         </div>
 
         <div className="border-t border-neutral-900/10 py-6 text-center text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
-          © {new Date().getFullYear()} VUIS · Made in the Azores
+          © {new Date().getFullYear()} VUIS · {c.madeIn}
         </div>
       </footer>
 

@@ -85,7 +85,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         product,
         color,
         quantity: i.quantity,
-        lineTotal: product.price * i.quantity,
+        lineTotal: (color ?? product.colors[0]).price * i.quantity,
       };
     })
     .filter(Boolean) as CartContextValue["detailed"];

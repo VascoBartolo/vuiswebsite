@@ -12,14 +12,15 @@ import { ArrowUpRight, Compass, RefreshCw } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { CartProvider } from "@/lib/cart";
+import { LanguageProvider } from "@/lib/i18n";
 import { CookieConsentProvider } from "@/lib/cookie-consent";
 import { SiteLayout } from "@/components/SiteLayout";
 import { Toaster } from "@/components/ui/sonner";
 
 const SITE_URL = "https://vuiswebsite.vercel.app";
-const SITE_TITLE = "VUIS — Minimal Eyewear, Made in the Azores";
+const SITE_TITLE = "VUIS — Minimal Eyewear, Designed in the Azores";
 const SITE_DESCRIPTION =
-  "VUIS crafts minimal, luxury eyewear from the Azores. Italian Mazzucchelli acetate, hand-tinted lenses, 100% UV400 protection.";
+  "VUIS designs minimal, luxury eyewear in the Azores. Robust steel frames encased in high-quality resin, with elegant gradient lenses.";
 
 /** Tells search engines the storefront is a real shop with a real address. */
 const organizationSchema = {
@@ -79,7 +80,7 @@ function NotFoundComponent() {
         </div>
 
         <p className="mt-10 text-[10px] font-semibold uppercase tracking-[0.3em] text-neutral-400">
-          VUIS · Made in the Azores
+          VUIS · Designed in the Azores
         </p>
       </div>
     </div>
@@ -233,12 +234,14 @@ function RootComponent() {
     // the visitor's OS-level motion preference without per-component checks.
     <MotionConfig reducedMotion="user">
       <QueryClientProvider client={queryClient}>
-        <CookieConsentProvider>
-          <CartProvider>
-            <SiteLayout />
-            <Toaster />
-          </CartProvider>
-        </CookieConsentProvider>
+        <LanguageProvider>
+          <CookieConsentProvider>
+            <CartProvider>
+              <SiteLayout />
+              <Toaster />
+            </CartProvider>
+          </CookieConsentProvider>
+        </LanguageProvider>
       </QueryClientProvider>
     </MotionConfig>
   );
