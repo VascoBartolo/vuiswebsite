@@ -17,7 +17,7 @@ import { CookieConsentProvider } from "@/lib/cookie-consent";
 import { SiteLayout } from "@/components/SiteLayout";
 import { Toaster } from "@/components/ui/sonner";
 
-const SITE_URL = "https://vuiswebsite.vercel.app";
+const SITE_URL = "https://www.vuisstore.com";
 const SITE_TITLE = "VUIS — Minimal Eyewear, Designed in the Azores";
 const SITE_DESCRIPTION =
   "VUIS designs minimal, luxury eyewear in the Azores. Robust steel frames encased in high-quality resin, with elegant gradient lenses.";
@@ -146,20 +146,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         { property: "og:description", content: SITE_DESCRIPTION },
         { property: "og:type", content: "website" },
         { property: "og:url", content: SITE_URL },
-        { property: "og:image", content: `${SITE_URL}/og-image.jpg` },
+        { property: "og:image", content: `${SITE_URL}/og-image-logo.jpg` },
         { property: "og:image:width", content: "1200" },
         { property: "og:image:height", content: "630" },
         {
           property: "og:image:alt",
-          content:
-            "VUIS Azor and Pico Noir sunglasses side by side on a soft cream background",
+          content: "VUIS logo on a soft cream background",
         },
         { property: "og:locale", content: "en_GB" },
 
         { name: "twitter:card", content: "summary_large_image" },
         { name: "twitter:title", content: SITE_TITLE },
         { name: "twitter:description", content: SITE_DESCRIPTION },
-        { name: "twitter:image", content: `${SITE_URL}/og-image.jpg` },
+        { name: "twitter:image", content: `${SITE_URL}/og-image-logo.jpg` },
       ],
       links: [
         { rel: "stylesheet", href: appCss },

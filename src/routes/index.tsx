@@ -218,7 +218,7 @@ function Index() {
               initial={{ opacity: 0, scale: 1.04 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 1.3, delay: 0.3, ease: EASE }}
-              className="relative mx-auto aspect-square h-[40svh] min-h-[300px] w-auto rounded-[2rem] object-cover shadow-[0_30px_70px_-30px_rgba(80,60,30,0.45)] md:h-[52svh] md:min-h-[360px] lg:h-[62svh]"
+              className="relative mx-auto aspect-square h-[40svh] min-h-[300px] w-auto rounded-[2rem] object-cover contrast-[0.85] saturate-[0.9] shadow-[0_30px_70px_-30px_rgba(80,60,30,0.45)] md:h-[52svh] md:min-h-[360px] lg:h-[62svh]"
             />
 
             {/* Floating glass chips. The outer element carries the entrance so
